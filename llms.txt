@@ -37,7 +37,7 @@ Stream real-time, normalized prediction market data over WebSocket. One connecti
 Data is addressed by **what**, not where. You subscribe to `dist:fomc-2026-04-29`, not a venue-specific ticker. Both venues arrive on the same channel, tagged by `venue` field.
 
 ```
-wss://ws.oddpool.com
+wss://feeds.oddpool.com/ws
 ```
 
 ### Authentication
