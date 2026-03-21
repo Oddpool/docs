@@ -1,0 +1,105 @@
+---
+title: "Feed catalog"
+description: "Discover available events and the exact channel names to subscribe to."
+api: "GET https://api.oddpool.com/feeds/catalog"
+---
+
+List all available feed events, grouped by feed vertical. Returns event keys, venues, outcome counts, and pre-built channel names.
+
+## Parameters
+
+<ParamField query="feed" type="string" default="all">
+  Filter by feed vertical (e.g., `macro`).
+</ParamField>
+
+## Example
+
+```bash
+curl -H "X-API-Key: oddpool_..." \
+  "https://api.oddpool.com/feeds/catalog?feed=macro"
+```
+
+## Response
+
+```json
+{
+  "feeds": {
+    "macro": {
+      "description": "Cross-venue macro economic prediction markets",
+      "events": [
+        {
+          "event_key": "fomc-2026-04-29",
+          "title": "FOMC April 2026",
+          "type": "fomc",
+          "event_date": "2026-04-29",
+          "status": "upcoming",
+          "venues": ["kalshi", "polymarket"],
+          "outcomes": 5,
+          "channels": {
+            "dist": "dist:fomc-2026-04-29",
+            "book": "book:fomc-2026-04-29:{outcome_key}",
+            "trade": "trade:fomc-2026-04-29:{outcome_key}",
+            "snapshot": "snapshot:fomc-2026-04-29"
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+---
+
+## Get single event
+
+<div id="feeds-catalog-event" />
+
+```
+GET https://api.oddpool.com/feeds/catalog/{event_key}
+```
+
+Get a single event with its full outcome list and per-outcome channel names. Use this to find the `outcome_key` values for book and trade subscriptions.
+
+### Example
+
+```bash
+curl -H "X-API-Key: oddpool_..." \
+  "https://api.oddpool.com/feeds/catalog/fomc-2026-04-29"
+```
+
+### Response
+
+```json
+{
+  "event_key": "fomc-2026-04-29",
+  "title": "FOMC April 2026",
+  "type": "fomc",
+  "feed": "macro",
+  "event_date": "2026-04-29",
+  "status": "upcoming",
+  "outcomes": [
+    {
+      "outcome_key": "hold",
+      "label": "Fed maintains rate",
+      "venues": ["kalshi", "polymarket"],
+      "channels": {
+        "book": "book:fomc-2026-04-29:hold",
+        "trade": "trade:fomc-2026-04-29:hold"
+      }
+    },
+    {
+      "outcome_key": "cut_25",
+      "label": "Cut 25bps",
+      "venues": ["kalshi", "polymarket"],
+      "channels": {
+        "book": "book:fomc-2026-04-29:cut_25",
+        "trade": "trade:fomc-2026-04-29:cut_25"
+      }
+    }
+  ],
+  "channels": {
+    "dist": "dist:fomc-2026-04-29",
+    "snapshot": "snapshot:fomc-2026-04-29"
+  }
+}
+```

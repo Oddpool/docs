@@ -1,0 +1,35 @@
+---
+title: "Recent markets"
+description: "Latest market listings without a search query."
+api: "GET https://api.oddpool.com/search/recent/markets"
+---
+
+Latest market listings. Useful for new-listing alerts without a search query.
+
+## Parameters
+
+<ParamField query="exchange" type="string">
+  Filter: `kalshi` or `polymarket`.
+</ParamField>
+<ParamField query="limit" type="integer" default="30">
+  Max results (1-100).
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/search/recent/markets?limit=10"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/search/recent/markets",
+    headers={"X-API-Key": "your_api_key"},
+    params={"limit": 10}
+)
+markets = response.json()
+```
+</CodeGroup>

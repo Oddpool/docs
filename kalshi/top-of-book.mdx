@@ -1,0 +1,53 @@
+---
+title: "Historical top of book"
+description: "Lightweight timeseries of best bid, best ask, mid, and spread."
+api: "GET https://api.oddpool.com/historical/kalshi/top-of-book"
+---
+
+Lightweight timeseries of best bid, best ask, mid, and spread. Same data as the orderbook endpoint but without the full level arrays. Ideal for charting price history.
+
+## Parameters
+
+<ParamField query="market_id" type="string" required>
+  Kalshi market ticker (e.g., `KXFEDDECISION-26APR-H0`).
+</ParamField>
+<ParamField query="start_time" type="integer">
+  Start time in Unix ms. Omit with `end_time` to get latest data.
+</ParamField>
+<ParamField query="end_time" type="integer">
+  End time in Unix ms. Omit with `start_time` to get latest data.
+</ParamField>
+<ParamField query="granularity" type="string" default="1m">
+  Snapshot interval: `1m` or `5m`.
+</ParamField>
+<ParamField query="limit" type="integer" default="100">
+  Max rows per page (1-200).
+</ParamField>
+<ParamField query="pagination_key" type="string">
+  Cursor from previous response for next page.
+</ParamField>
+
+## Example
+
+```bash
+curl -H "X-API-Key: oddpool_..." \
+  "https://api.oddpool.com/historical/kalshi/top-of-book?market_id=KXFEDDECISION-26APR-H0&start_time=1774015200000&end_time=1774018800000&granularity=5m"
+```
+
+## Response
+
+```json
+{
+  "snapshots": [
+    {
+      "market_id": "KXFEDDECISION-26APR-H0",
+      "timestamp": 1774015256106,
+      "best_yes_bid": 0.94,
+      "best_yes_ask": 0.94,
+      "mid": 0.94,
+      "spread": 0.0
+    }
+  ],
+  "pagination": { ... }
+}
+```

@@ -1,97 +1,46 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Oddpool API"
+description: "Prediction market data across Kalshi and Polymarket."
 ---
 
-## Setting up
+The Oddpool API provides programmatic access to prediction market data across Kalshi and Polymarket -- including whale trades, cross-venue arbitrage, price spreads, real-time WebSocket feeds, and full-text search.
 
-Get your documentation site up and running in minutes.
+All API requests should be made to:
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+```
+https://api.oddpool.com
+```
 
-## Make it yours
+## Quick start
 
-Design a docs site that looks great and empowers your users.
+```bash
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/arbitrage/current?min_net_cents=0.5"
+```
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<Info>
+A machine-readable version of these docs is available at [`/llms.txt`](https://api.oddpool.com/llms.txt) -- fetch it to get the full API reference as structured markdown.
+</Info>
+
+## What you can build
+
+<CardGroup cols={2}>
+  <Card title="WebSocket feeds" icon="bolt" href="/websocket/overview">
+    Stream real-time orderbooks, trades, and probability distributions from Kalshi and Polymarket over a single connection.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Whale tracking" icon="fish" href="/whales/overview">
+    Monitor large trades across prediction markets. Track events and get alerts when whales move.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Arbitrage scanner" icon="scale-balanced" href="/arbitrage/overview">
+    Find cross-venue arbitrage opportunities and price spreads between Kalshi and Polymarket.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Market search" icon="magnifying-glass" href="/search/overview">
+    Full-text search across all prediction markets with filtering by exchange, category, volume, and liquidity.
   </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+  <Card title="Kalshi historical" icon="clock-rotate-left" href="/kalshi/overview">
+    Orderbook snapshots, top-of-book timeseries, and trade tapes for Kalshi markets.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Polymarket historical" icon="clock-rotate-left" href="/polymarket/overview">
+    Orderbook snapshots, top-of-book timeseries, and trade tapes for Polymarket markets.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+</CardGroup>

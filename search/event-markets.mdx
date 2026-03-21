@@ -1,0 +1,31 @@
+---
+title: "Event markets"
+description: "List all markets under one event."
+api: "GET https://api.oddpool.com/search/events/{event_id}/markets"
+---
+
+List all markets under one event. Use after finding an event via search to see every tradeable outcome.
+
+## Parameters
+
+<ParamField path="event_id" type="string" required>
+  Event ID.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/search/events/KXFEDDECISION-26MAR/markets"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/search/events/KXFEDDECISION-26MAR/markets",
+    headers={"X-API-Key": "your_api_key"}
+)
+markets = response.json()
+```
+</CodeGroup>

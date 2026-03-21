@@ -1,0 +1,53 @@
+---
+title: "Get stats"
+description: "Get aggregated statistics for all tracked events."
+api: "GET https://api.oddpool.com/whales/user/stats"
+---
+
+## Parameters
+
+<ParamField query="period" type="string" default="24h">
+  Time period: `24h`, `7d`, or `all`.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/whales/user/stats?period=7d"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/whales/user/stats",
+    headers={"X-API-Key": "your_api_key"},
+    params={"period": "7d"}
+)
+data = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "period": "7d",
+  "events": [
+    {
+      "event_id": 65,
+      "event_ticker": "KXBUNDESLIGAGAME-26JAN14KOEBMU",
+      "event_title": "1. FC Cologne vs Bayern Munich",
+      "platform": "kalshi",
+      "stats": {
+        "trade_count": 151,
+        "total_volume": 185195.0,
+        "avg_trade_size": 1226.46,
+        "market_count": 3
+      },
+      "markets": [...]
+    }
+  ]
+}
+```

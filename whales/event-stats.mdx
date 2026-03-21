@@ -1,0 +1,62 @@
+---
+title: "Event stats"
+description: "Get statistics for a specific tracked event."
+api: "GET https://api.oddpool.com/whales/user/event/{event_id}/stats"
+---
+
+## Parameters
+
+<ParamField path="event_id" type="integer" required>
+  Event ID.
+</ParamField>
+<ParamField query="period" type="string" default="24h">
+  Time period: `24h`, `7d`, or `all`.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/whales/user/event/65/stats?period=all"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/whales/user/event/65/stats",
+    headers={"X-API-Key": "your_api_key"},
+    params={"period": "all"}
+)
+data = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "event_id": 65,
+  "event_ticker": "KXBUNDESLIGAGAME-26JAN14KOEBMU",
+  "event_title": "1. FC Cologne vs Bayern Munich",
+  "platform": "kalshi",
+  "period": "all",
+  "stats": {
+    "trade_count": 151,
+    "total_volume": 185195.0,
+    "avg_trade_size": 1226.46,
+    "market_count": 3,
+    "first_trade_at": "2026-01-14T19:51:59Z",
+    "last_trade_at": "2026-01-14T21:24:25Z"
+  },
+  "markets": [
+    {
+      "market_ticker": "KXBUNDESLIGAGAME-26JAN14KOEBMU-BMU",
+      "platform": "kalshi",
+      "trade_count": 124,
+      "total_volume": 156445.15,
+      "avg_trade_size": 1261.65
+    }
+  ]
+}
+```

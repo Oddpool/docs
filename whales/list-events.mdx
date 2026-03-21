@@ -1,0 +1,42 @@
+---
+title: "List events"
+description: "List all events you are currently tracking."
+api: "GET https://api.oddpool.com/whales/user/events"
+---
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  https://api.oddpool.com/whales/user/events
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/whales/user/events",
+    headers={"X-API-Key": "your_api_key"}
+)
+data = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "tracked_events": [
+    {
+      "id": 65,
+      "event_id": 65,
+      "event_ticker": "KXBUNDESLIGAGAME-26JAN14KOEBMU",
+      "event_title": "1. FC Cologne vs Bayern Munich",
+      "platform": "kalshi",
+      "whale_threshold_usd": 1000,
+      "notify_on_whale_trade": true,
+      "whale_count_24h": 12
+    }
+  ]
+}
+```

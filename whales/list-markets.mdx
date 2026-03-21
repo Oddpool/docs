@@ -1,0 +1,42 @@
+---
+title: "List markets"
+description: "List all markets for your tracked events."
+api: "GET https://api.oddpool.com/whales/user/markets"
+---
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  https://api.oddpool.com/whales/user/markets
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/whales/user/markets",
+    headers={"X-API-Key": "your_api_key"}
+)
+data = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "markets": [
+    {
+      "market_id": 370,
+      "market_ticker": "KXBUNDESLIGAGAME-26JAN14KOEBMU-BMU",
+      "market_title": "Winner: Bayern Munich",
+      "event_id": 65,
+      "event_title": "1. FC Cologne vs Bayern Munich",
+      "platform": "kalshi",
+      "whale_count_24h": 45
+    }
+  ],
+  "total_markets": 3
+}
+```

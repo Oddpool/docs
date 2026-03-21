@@ -1,0 +1,65 @@
+---
+title: "Price spreads"
+description: "Find where venues disagree on the same outcome's price."
+api: "GET https://api.oddpool.com/arbitrage/current/difference"
+---
+
+Find where venues disagree on the same outcome's price. A large spread signals potential mispricing.
+
+<Tip>
+**Example:** "Will the Fed cut rates?" -- YES is 42c on Kalshi but 39c on Polymarket. If you think the true price is closer to 42c, Polymarket is offering a discount.
+</Tip>
+
+<Warning>
+Unlike arbitrage, price spreads are **not risk-free**. They highlight venue disagreement, which can signal a trading edge.
+</Warning>
+
+## Parameters
+
+<ParamField query="minutes" type="integer" default="10000">
+  Lookback window in minutes.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/arbitrage/current/difference?minutes=10"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/arbitrage/current/difference",
+    headers={"X-API-Key": "your_api_key"},
+    params={"minutes": 10}
+)
+diffs = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+[
+  {
+    "event_id": 42,
+    "event_title": "Fed rate decision March",
+    "kalshi_event_ticker": "KXFEDDECISION-26MAR",
+    "polymarket_event_slug": "fed-rate-march",
+    "opinion_market_id": null,
+    "market_type": "binary",
+    "outcome_key": "yes",
+    "label": "25bps cut",
+    "timestamp": "2026-03-11T14:30:00",
+    "resolution_time": "2026-03-19T18:00:00",
+    "side": "YES",
+    "side1": "Kalshi",
+    "side2": "Polymarket",
+    "side1_price": 0.42,
+    "side2_price": 0.39,
+    "diff": 0.03
+  }
+]
+```

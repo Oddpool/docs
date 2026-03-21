@@ -1,0 +1,28 @@
+---
+title: "Authentication"
+description: "Authenticate API requests with your API key."
+---
+
+Authenticate requests by including your API key in the `X-API-Key` header. Generate API keys from your [account settings](https://oddpool.com/account).
+
+```bash
+curl -H "X-API-Key: oddpool_your_api_key" \
+  "https://api.oddpool.com/whales/user/events"
+```
+
+## Endpoint access by plan
+
+| Endpoint group | Required plan | Price |
+|---|---|---|
+| Search | Free | Free |
+| Historical data | Free | Free |
+| WebSocket feeds | Free+ | Free (dist only), Pro+ for book/trade/snapshot |
+| Whale tracking | Pro | 30/mo |
+| Arbitrage | Premium | 100/mo |
+| Price spreads | Premium | 100/mo |
+
+<Warning>
+Keep your API key confidential. Do not expose it in client-side code or public repositories.
+</Warning>
+
+Requests with invalid or expired credentials receive a `401` (invalid key) or `403` (insufficient tier) response.

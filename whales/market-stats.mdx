@@ -1,0 +1,53 @@
+---
+title: "Market stats"
+description: "Get statistics for a specific market."
+api: "GET https://api.oddpool.com/whales/user/market/{market_id}/stats"
+---
+
+## Parameters
+
+<ParamField path="market_id" type="integer" required>
+  Market ID.
+</ParamField>
+<ParamField query="period" type="string" default="24h">
+  Time period: `24h`, `7d`, or `all`.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/whales/user/market/370/stats?period=all"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/whales/user/market/370/stats",
+    headers={"X-API-Key": "your_api_key"},
+    params={"period": "all"}
+)
+data = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "market_id": 370,
+  "market_ticker": "KXBUNDESLIGAGAME-26JAN14KOEBMU-BMU",
+  "market_title": "Winner: Bayern Munich",
+  "platform": "kalshi",
+  "period": "all",
+  "stats": {
+    "period": "all",
+    "trade_count": 124,
+    "total_volume": 156445.15,
+    "avg_trade_size": 1261.65,
+    "first_trade_at": "2026-01-14T19:51:59Z",
+    "last_trade_at": "2026-01-14T21:24:25Z"
+  }
+}
+```

@@ -1,0 +1,55 @@
+---
+title: "Historical trades"
+description: "Trade executions on a Polymarket market."
+api: "GET https://api.oddpool.com/historical/polymarket/trades"
+---
+
+Trade executions on a Polymarket market. Polymarket trades can be BUY or SELL. Use `asset_id` to filter to a specific token.
+
+## Parameters
+
+<ParamField query="market_id" type="string" required>
+  Polymarket condition ID (`0x...`).
+</ParamField>
+<ParamField query="asset_id" type="string">
+  Filter by specific token ID.
+</ParamField>
+<ParamField query="start_time" type="integer">
+  Start time in Unix ms.
+</ParamField>
+<ParamField query="end_time" type="integer">
+  End time in Unix ms.
+</ParamField>
+<ParamField query="limit" type="integer" default="100">
+  Max rows per page (1-200).
+</ParamField>
+<ParamField query="pagination_key" type="string">
+  Cursor from previous response for next page.
+</ParamField>
+
+## Example
+
+```bash
+curl -H "X-API-Key: oddpool_..." \
+  "https://api.oddpool.com/historical/polymarket/trades?market_id=0x36e8ca24...&start_time=1774015200000&end_time=1774018800000"
+```
+
+## Response
+
+```json
+{
+  "trades": [
+    {
+      "asset_id": "56914066788195652124...",
+      "market_id": "0x00000977017fa72fb6b1...",
+      "timestamp": 1774020951044,
+      "side": "BUY",
+      "price": "0.987",
+      "size": 1.317,
+      "transaction_hash": "0x554c0b25544baa5f...",
+      "fee_rate_bps": "0"
+    }
+  ],
+  "pagination": { ... }
+}
+```

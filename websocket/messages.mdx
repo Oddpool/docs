@@ -1,0 +1,123 @@
+---
+title: "Message reference"
+description: "Schema reference for dist, book, trade, and snapshot channel messages."
+---
+
+Four channel types, one envelope. Every message arrives wrapped in:
+
+```json
+{"type": "data", "channel": "dist:fomc-2026-04-29", "data": { ... }}
+```
+
+## Channel types
+
+| Channel | Subscribe to | Description | Tier |
+|---|---|---|---|
+| **dist** | `dist:fomc-2026-04-29` | Cross-venue probability distribution for all outcomes | Free |
+| **book** | `book:fomc-2026-04-29:hold` | Normalized orderbook updates for one outcome | Pro |
+| **trade** | `trade:fomc-2026-04-29:hold` | Trade executions for one outcome | Pro |
+| **snapshot** | `snapshot:fomc-2026-04-29` | Full state reset every 60s for all outcomes | Pro |
+
+## Distribution
+
+Shows the market-implied probability for every outcome in an event, combining data from both venues.
+
+```json
+{
+  "event_key": "fomc-2026-04-29",
+  "seq": 312,
+  "published_ts": 1773892530947,
+  "outcomes": [
+    {
+      "outcome": "hold",
+      "label": "Fed maintains rate",
+      "kalshi_prob": 0.945,
+      "poly_prob": 0.955,
+      "prob": 0.9479,
+      "kalshi_depth_usd": 4714197.04,
+      "poly_depth_usd": 1965879.48
+    }
+  ],
+  "total_kalshi_depth_usd": 4784397.57,
+  "total_poly_depth_usd": 2104564.65
+}
+```
+
+| Field | Description |
+|---|---|
+| `prob` | Combined probability, weighted by each venue's liquidity. Kalshi at 94.5% with 4.7M USD depth + Polymarket at 95.5% with 2.0M USD depth = 94.79%. |
+| `kalshi_prob` / `poly_prob` | Each venue's YES mid-price (best bid + best ask) / 2. Null if that venue has no data. |
+| `kalshi_depth_usd` / `poly_depth_usd` | Total USD within +/-5c of mid on each venue. Shows how much liquidity backs each probability. |
+
+## Book update
+
+Normalized orderbook updates from both venues. Prices are contract prices (0-1), sizes are absolute quantities. Derived fields like best bid/ask, mid, spread, and depth are pre-computed on every update.
+
+```json
+{
+  "event_key": "fomc-2026-04-29",
+  "outcome": "hold",
+  "venue": "polymarket",
+  "token": "yes",
+  "venue_id": {
+    "condition_id": "0x36e8ca2...",
+    "token_id": "63586620628..."
+  },
+  "seq": 4217,
+  "exchange_ts": 1773892530351,
+  "received_ts": 1773892530360,
+  "published_ts": 1773892530363,
+  "update_type": "delta",
+  "levels": [
+    {"side": "bid", "price": "0.955", "size": 8300.00},
+    {"side": "ask", "price": "0.965", "size": 0}
+  ],
+  "best_bid": "0.955",
+  "best_ask": "0.965",
+  "mid": "0.960",
+  "spread": "0.010",
+  "bid_depth_usd": 47141.97,
+  "ask_depth_usd": 23456.78
+}
+```
+
+| Field | Description |
+|---|---|
+| `venue_id` | Identifiers to execute on the venue. Kalshi: market ticker. Polymarket: condition ID + token ID. |
+| `update_type` | "snapshot" = full book replacement. "delta" = only changed levels. Size of 0 = level removed. |
+| `levels` | Price levels with side (bid/ask), price (0-1), and size (absolute quantity after this update). |
+| `best_bid` / `best_ask` / `mid` / `spread` | Pre-computed from full cross-token book state, not just the levels in this update. |
+| `bid_depth_usd` / `ask_depth_usd` | Total USD within +/-5c of mid on bid and ask sides. |
+
+## Trade
+
+Every trade execution from both venues, including the specific contract traded, price, quantity, and a venue-provided trade ID.
+
+```json
+{
+  "event_key": "fomc-2026-04-29",
+  "outcome": "hold",
+  "venue": "kalshi",
+  "token": "no",
+  "action": "buy",
+  "venue_id": {"market_ticker": "KXFEDDECISION-26APR-H0"},
+  "seq": 89,
+  "exchange_ts": 1773892530000,
+  "received_ts": 1773892530008,
+  "published_ts": 1773892530010,
+  "price": "0.06",
+  "qty": 136.00,
+  "trade_id": "a4d77927-dafe-5bde-53ed-80f6129cfd19"
+}
+```
+
+## Timestamps
+
+Every book and trade message carries four timestamps (Unix ms) for end-to-end latency decomposition.
+
+| Field | Description |
+|---|---|
+| `exchange_ts` | When the exchange says the event occurred. Null if not provided by the venue. |
+| `received_ts` | When we read the raw message off the venue WebSocket. |
+| `published_ts` | When the normalized message was published internally. |
+| `gateway_ts` | When the gateway sent the message to your WebSocket. |

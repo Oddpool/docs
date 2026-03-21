@@ -1,0 +1,21 @@
+---
+title: "Limits and errors"
+description: "WebSocket connection limits by tier and error codes."
+---
+
+## Limits by tier
+
+| Tier | Connections | Events | Channels | Snapshots |
+|---|---|---|---|---|
+| Free | 1 | 2 | dist only | No |
+| Pro | 3 | 10 | All | Yes |
+| Premium | 10 | Unlimited | All | Yes |
+| Enterprise | Unlimited | Unlimited | All | Yes |
+
+## Error codes
+
+| Code | Description |
+|---|---|
+| `CHANNEL_NOT_ALLOWED` | Your tier does not have access to this channel type. Free tier only supports `dist:` channels. |
+| `EVENT_LIMIT` | Concurrent event subscription limit reached. Unsubscribe from an event to free up a slot. |
+| `CONNECTION_LIMIT` | Maximum concurrent connections reached. Close an existing connection first. |

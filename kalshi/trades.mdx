@@ -1,0 +1,50 @@
+---
+title: "Historical trades"
+description: "Every trade execution on a Kalshi market."
+api: "GET https://api.oddpool.com/historical/kalshi/trades"
+---
+
+Every trade execution on a Kalshi market. Kalshi only surfaces the taker's buy side in public data.
+
+## Parameters
+
+<ParamField query="market_id" type="string" required>
+  Kalshi market ticker (e.g., `KXFEDDECISION-26APR-H0`).
+</ParamField>
+<ParamField query="start_time" type="integer">
+  Start time in Unix ms.
+</ParamField>
+<ParamField query="end_time" type="integer">
+  End time in Unix ms.
+</ParamField>
+<ParamField query="limit" type="integer" default="100">
+  Max rows per page (1-200).
+</ParamField>
+<ParamField query="pagination_key" type="string">
+  Cursor from previous response for next page.
+</ParamField>
+
+## Example
+
+```bash
+curl -H "X-API-Key: oddpool_..." \
+  "https://api.oddpool.com/historical/kalshi/trades?market_id=KXFEDDECISION-26APR-H0&start_time=1774015200000&end_time=1774018800000"
+```
+
+## Response
+
+```json
+{
+  "trades": [
+    {
+      "market_id": "KXFEDDECISION-26APR-H0",
+      "timestamp": 1774015436710,
+      "taker_side": "yes",
+      "price": "0.9500",
+      "size": 105.0,
+      "trade_id": "4bd8859f-eeaf-685e-e4b5-e9f17516b89c"
+    }
+  ],
+  "pagination": { ... }
+}
+```

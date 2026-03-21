@@ -1,0 +1,58 @@
+---
+title: "WebSocket overview"
+description: "Stream real-time prediction market data over a single WebSocket connection."
+---
+
+Stream real-time, normalized prediction market data over WebSocket. One connection gives you cross-venue orderbooks, trades, and probability distributions from both Kalshi and Polymarket -- no venue-specific code needed.
+
+Data is addressed by **what**, not where. You subscribe to `dist:fomc-2026-04-29`, not a venue-specific ticker. Both venues arrive on the same channel, tagged by `venue` field.
+
+```
+wss://ws.oddpool.com
+```
+
+## Authentication
+
+Send an auth message with your API key after connecting. The server responds with your tier and limits.
+
+```json
+// Send
+{"action": "auth", "api_key": "oddpool_abc123..."}
+
+// Response
+{
+  "type": "auth",
+  "status": "ok",
+  "user_id": 42,
+  "tier": "pro",
+  "limits": {
+    "max_events": 10,
+    "max_connections": 3,
+    "channels": ["dist", "book", "trade", "snapshot"]
+  }
+}
+```
+
+## Subscribe and unsubscribe
+
+Subscribe to channels by event. Events count as concurrent subscriptions -- unsubscribing frees up slots.
+
+### Channel format
+
+| Format | Example | Scope |
+|---|---|---|
+| `{type}:{event_key}` | `dist:fomc-2026-04-29` | All outcomes for that event |
+| `{type}:{event_key}:{outcome}` | `book:fomc-2026-04-29:hold` | Single outcome |
+
+### Example
+
+```json
+// Subscribe to multiple channels at once
+{"action": "subscribe", "channels": ["dist:fomc-2026-04-29", "book:fomc-2026-04-29:hold"]}
+
+// Response
+{"type": "subscribed", "channels": ["dist:fomc-2026-04-29", "book:fomc-2026-04-29:hold"]}
+
+// Unsubscribe
+{"action": "unsubscribe", "channels": ["book:fomc-2026-04-29:hold"]}
+```

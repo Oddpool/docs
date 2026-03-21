@@ -1,0 +1,28 @@
+---
+title: "Macro feed"
+description: "Cross-venue matched macro economic events from Kalshi and Polymarket."
+---
+
+Cross-venue matched macro economic events from Kalshi and Polymarket. Real-time orderbooks, trade executions, and liquidity-weighted probability distributions for FOMC, CPI, NFP, GDP, unemployment, rate expectations, equities, and commodities.
+
+## Event categories
+
+| Category | Examples |
+|---|---|
+| FOMC Rate Decisions | Upcoming meeting outcomes, total rate cuts for the year |
+| Inflation (CPI) | Year-over-year, month-over-month |
+| Jobs | Nonfarm payrolls, unemployment rate |
+| GDP | Quarterly real GDP, annual GDP growth |
+| Equities & Commodities | S&P 500, Nasdaq 100, gold, silver |
+
+Use the [feed catalog](/websocket/catalog) endpoint to get the full list of available events and their channel names.
+
+## Use cases
+
+**Arbitrage.** See cross-venue price divergence in real-time. Each message includes `venue_id` with the venue-specific identifiers (Kalshi market ticker, Polymarket condition/token IDs) needed to execute immediately.
+
+**Signal generation.** The `dist` channel computes a liquidity-weighted cross-venue probability on every book update -- a better signal than either venue alone.
+
+**Macro monitoring.** One WebSocket covers FOMC, CPI, NFP, GDP, unemployment, and rate expectations. Subscribe to `dist:*` events and build a real-time macro probability surface.
+
+**Trading agents.** Normalized schema means your agent code is venue-agnostic. Parse once, trade anywhere.

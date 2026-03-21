@@ -1,0 +1,26 @@
+---
+title: "Error handling"
+description: "HTTP status codes and error response format."
+---
+
+The API uses standard HTTP response codes to indicate success or failure.
+
+| Code | Description |
+|---|---|
+| `200` | Success |
+| `400` | Bad request -- invalid parameters |
+| `401` | Unauthorized -- invalid API key |
+| `403` | Forbidden -- no active subscription or insufficient tier |
+| `404` | Not found -- resource does not exist |
+| `429` | Rate limit exceeded |
+| `500` | Server error |
+
+## Error response format
+
+All errors return a JSON body with a `detail` field:
+
+```json
+{"detail": "Error message"}
+```
+
+When you receive a `429`, check the `Retry-After` header for the number of seconds to wait before retrying.

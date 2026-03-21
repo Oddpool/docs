@@ -1,0 +1,76 @@
+---
+title: "Get feed"
+description: "Get whale trades for all your tracked events."
+api: "GET https://api.oddpool.com/whales/user/feed"
+---
+
+## Parameters
+
+<ParamField query="limit" type="integer" default="50">
+  Max results (1-500).
+</ParamField>
+<ParamField query="offset" type="integer" default="0">
+  Pagination offset.
+</ParamField>
+<ParamField query="start_date" type="datetime">
+  Filter by start date (ISO 8601).
+</ParamField>
+<ParamField query="end_date" type="datetime">
+  Filter by end date (ISO 8601).
+</ParamField>
+<ParamField query="min_trade_size" type="float">
+  Minimum trade size in USD.
+</ParamField>
+<ParamField query="platform" type="string">
+  Filter by platform: `kalshi` or `polymarket`.
+</ParamField>
+<ParamField query="event_id" type="integer">
+  Filter to specific event.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/whales/user/feed?limit=10&platform=kalshi"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/whales/user/feed",
+    headers={"X-API-Key": "your_api_key"},
+    params={"limit": 10, "platform": "kalshi"}
+)
+data = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "trades": [
+    {
+      "id": 12345,
+      "platform": "kalshi",
+      "event_title": "1. FC Cologne vs Bayern Munich",
+      "market_title": "Winner: Bayern Munich",
+      "market_ticker": "KXBUNDESLIGAGAME-26JAN14KOEBMU-BMU",
+      "outcome": "Bayern Munich",
+      "timestamp": "2026-01-14T21:24:25Z",
+      "taker_side": "yes",
+      "trade_size_usd": 15000.00,
+      "price": 0.78,
+      "count": 1
+    }
+  ],
+  "stats": {
+    "total_volume_24h": 185195.0,
+    "total_trades_24h": 151,
+    "avg_trade_size": 1226.46
+  },
+  "pagination": {"limit": 10, "offset": 0, "total": 151}
+}
+```

@@ -1,0 +1,39 @@
+---
+title: "Market trades"
+description: "Get whale trades for a specific market."
+api: "GET https://api.oddpool.com/whales/user/market/{market_id}/trades"
+---
+
+## Parameters
+
+<ParamField path="market_id" type="integer" required>
+  Market ID.
+</ParamField>
+<ParamField query="limit" type="integer" default="50">
+  Max results (1-500).
+</ParamField>
+<ParamField query="offset" type="integer" default="0">
+  Pagination offset.
+</ParamField>
+<ParamField query="min_trade_size" type="float">
+  Minimum trade size in USD.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/whales/user/market/370/trades?limit=10"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/whales/user/market/370/trades",
+    headers={"X-API-Key": "your_api_key"},
+    params={"limit": 10}
+)
+data = response.json()
+```
+</CodeGroup>
