@@ -39,7 +39,18 @@ Shows the market-implied probability for every outcome in an event, combining da
     }
   ],
   "total_kalshi_depth_usd": 4784397.57,
-  "total_poly_depth_usd": 2104564.65
+  "total_poly_depth_usd": 2104564.65,
+  "reference": {
+    "source": "binance",
+    "symbol": "BTCUSDT",
+    "spot_bid": 68641.30,
+    "spot_ask": 68641.31,
+    "spot_mid": 68641.30,
+    "futures_mark": 68723.51,
+    "funding_rate": -0.00002124,
+    "volume_24h": 951752117.03,
+    "ts": 1774246512319
+  }
 }
 ```
 
@@ -48,6 +59,7 @@ Shows the market-implied probability for every outcome in an event, combining da
 | `prob` | Combined probability, weighted by each venue's liquidity. Kalshi at 94.5% with 4.7M USD depth + Polymarket at 95.5% with 2.0M USD depth = 94.79%. |
 | `kalshi_prob` / `poly_prob` | Each venue's YES mid-price (best bid + best ask) / 2. Null if that venue has no data. |
 | `kalshi_depth_usd` / `poly_depth_usd` | Total USD within +/-5c of mid on each venue. Shows how much liquidity backs each probability. |
+| `reference` | External reference data (e.g., Binance spot/futures for crypto events). Only present on enriched feeds. See [crypto feed](/websocket/crypto-feed) for field details. |
 
 ## Book update
 
@@ -77,7 +89,8 @@ Normalized orderbook updates from both venues. Prices are contract prices (0-1),
   "mid": "0.960",
   "spread": "0.010",
   "bid_depth_usd": 47141.97,
-  "ask_depth_usd": 23456.78
+  "ask_depth_usd": 23456.78,
+  "reference": { ... }
 }
 ```
 
@@ -88,6 +101,7 @@ Normalized orderbook updates from both venues. Prices are contract prices (0-1),
 | `levels` | Price levels with side (bid/ask), price (0-1), and size (absolute quantity after this update). |
 | `best_bid` / `best_ask` / `mid` / `spread` | Pre-computed from full cross-token book state, not just the levels in this update. |
 | `bid_depth_usd` / `ask_depth_usd` | Total USD within +/-5c of mid on bid and ask sides. |
+| `reference` | External reference data for enriched feeds. Only present on crypto events. Omitted for macro. |
 
 ## Trade
 
@@ -107,7 +121,8 @@ Every trade execution from both venues, including the specific contract traded, 
   "published_ts": 1773892530010,
   "price": "0.06",
   "qty": 136.00,
-  "trade_id": "a4d77927-dafe-5bde-53ed-80f6129cfd19"
+  "trade_id": "a4d77927-dafe-5bde-53ed-80f6129cfd19",
+  "reference": { ... }
 }
 ```
 

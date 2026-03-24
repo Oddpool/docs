@@ -27,6 +27,7 @@
             "pages": [
               "websocket/overview",
               "websocket/macro-feed",
+              "websocket/crypto-feed",
               "websocket/messages",
               "websocket/catalog",
               "websocket/limits"

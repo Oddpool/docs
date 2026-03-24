@@ -9,12 +9,21 @@ List all available feed events, grouped by feed vertical. Returns event keys, ve
 ## Parameters
 
 <ParamField query="feed" type="string" default="all">
-  Filter by feed vertical (e.g., `macro`).
+  Filter by feed vertical: `macro`, `crypto`, or `weather`.
+</ParamField>
+
+<ParamField query="status" type="string" default="all">
+  Filter by event status: `active`, `upcoming`, or `resolved`. Useful for crypto feeds where hundreds of short-lived events accumulate — use `status=active` to get only live events.
 </ParamField>
 
 ## Example
 
 ```bash
+# All active crypto events
+curl -H "X-API-Key: oddpool_..." \
+  "https://api.oddpool.com/feeds/catalog?feed=crypto&status=active"
+
+# All macro events (any status)
 curl -H "X-API-Key: oddpool_..." \
   "https://api.oddpool.com/feeds/catalog?feed=macro"
 ```
@@ -24,6 +33,43 @@ curl -H "X-API-Key: oddpool_..." \
 ```json
 {
   "feeds": {
+    "crypto": {
+      "description": "Crypto prediction markets enriched with Binance spot/futures",
+      "events": [
+        {
+          "event_key": "btc-5m-2026-03-24-0830-et",
+          "title": "BTC 5min Mar 24 8:30AM ET",
+          "type": "crypto",
+          "event_date": "2026-03-24",
+          "status": "active",
+          "venues": ["polymarket"],
+          "outcomes": 1,
+          "enrichment": "binance",
+          "channels": {
+            "dist": "dist:btc-5m-2026-03-24-0830-et",
+            "book": "book:btc-5m-2026-03-24-0830-et:{outcome_key}",
+            "trade": "trade:btc-5m-2026-03-24-0830-et:{outcome_key}",
+            "snapshot": "snapshot:btc-5m-2026-03-24-0830-et"
+          }
+        },
+        {
+          "event_key": "btc-hourly-2026-03-24-0900-et",
+          "title": "BTC Hourly Mar 24 9:00AM ET",
+          "type": "crypto",
+          "event_date": "2026-03-24",
+          "status": "active",
+          "venues": ["kalshi", "polymarket"],
+          "outcomes": 188,
+          "enrichment": "binance",
+          "channels": {
+            "dist": "dist:btc-hourly-2026-03-24-0900-et",
+            "book": "book:btc-hourly-2026-03-24-0900-et:{outcome_key}",
+            "trade": "trade:btc-hourly-2026-03-24-0900-et:{outcome_key}",
+            "snapshot": "snapshot:btc-hourly-2026-03-24-0900-et"
+          }
+        }
+      ]
+    },
     "macro": {
       "description": "Cross-venue macro economic prediction markets",
       "events": [
@@ -47,6 +93,13 @@ curl -H "X-API-Key: oddpool_..." \
   }
 }
 ```
+
+| Field | Description |
+|---|---|
+| `event_key` | Unique identifier for the event. Use this in channel subscriptions. |
+| `venues` | Which prediction market venues have data for this event. |
+| `enrichment` | External data source attached to every message. Only present for enriched feeds (e.g., `"binance"` for crypto). Macro events do not have this field. |
+| `channels` | Pre-built channel names. Replace `{outcome_key}` with a value from the single-event endpoint. |
 
 ---
 

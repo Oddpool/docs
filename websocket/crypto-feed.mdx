@@ -1,0 +1,223 @@
+---
+title: "Crypto feed"
+description: "Bitcoin and Ethereum prediction markets enriched with real-time Binance spot and futures data."
+---
+
+Real-time BTC and ETH prediction market data from Kalshi and Polymarket, enriched with Binance spot/futures reference prices on every message. Events are auto-discovered and matched cross-venue — new timeframes appear continuously and resolve automatically.
+
+## Assets
+
+| Asset | Binance symbol | Kalshi series | Polymarket series |
+|---|---|---|---|
+| Bitcoin | `BTCUSDT` | `KXBTCD`, `KXBTC15M` | `btc-up-or-down-*`, `bitcoin-multi-strikes-hourly` |
+| Ethereum | `ETHUSDT` | `KXETHD`, `KXETH15M` | `eth-up-or-down-*`, `ethereum-multi-strikes-hourly` |
+
+## Event types
+
+### Hourly above/below (cross-venue matched)
+
+Threshold strike markets: "Will BTC be above $68,500 at 3PM ET?" Both Kalshi and Polymarket run these, and Oddpool matches them by datetime so you get cross-venue probabilities on a single channel.
+
+```
+btc-hourly-2026-03-24-1500-et    "BTC Hourly Mar 24 3:00PM ET"
+eth-hourly-2026-03-24-1500-et    "ETH Hourly Mar 24 3:00PM ET"
+```
+
+Each hourly event has many outcomes (one per strike price). Kalshi typically has ~188 strikes, Polymarket ~10. All are available as separate outcomes on the same event.
+
+### 15-minute up/down (cross-venue matched)
+
+Binary "will the price go up or down in this 15-minute window?" Available on both Kalshi and Polymarket, matched by start time.
+
+```
+btc-15m-2026-03-24-1445-et    "BTC 15min Mar 24 2:45PM ET"
+eth-15m-2026-03-24-1445-et    "ETH 15min Mar 24 2:45PM ET"
+```
+
+### 5-minute up/down (Polymarket only)
+
+Same as 15-minute but with 5-minute resolution. Only available on Polymarket.
+
+```
+btc-5m-2026-03-24-1450-et    "BTC 5min Mar 24 2:50PM ET"
+eth-5m-2026-03-24-1450-et    "ETH 5min Mar 24 2:50PM ET"
+```
+
+### Hourly up/down (Polymarket only)
+
+Binary up/down for the full hour. Only available on Polymarket.
+
+```
+btc-updown-hourly-2026-03-24-15-et    "BTC Up/Down Hourly Mar 24 3PM ET"
+eth-updown-hourly-2026-03-24-15-et    "ETH Up/Down Hourly Mar 24 3PM ET"
+```
+
+## Binance reference data
+
+Every crypto `dist`, `book`, and `trade` message includes a `reference` field with real-time Binance spot and futures data. This gives your trading agent an immediate reference price without needing a separate data feed.
+
+```json
+"reference": {
+  "source": "binance",
+  "symbol": "BTCUSDT",
+  "spot_bid": 68641.30,
+  "spot_ask": 68641.31,
+  "spot_mid": 68641.30,
+  "futures_mark": 68723.51,
+  "funding_rate": -0.00002124,
+  "volume_24h": 951752117.03,
+  "ts": 1774246512319
+}
+```
+
+| Field | Description |
+|---|---|
+| `spot_bid` / `spot_ask` | Binance spot best bid and ask. Tight spread = high liquidity. |
+| `spot_mid` | `(spot_bid + spot_ask) / 2`, rounded to 2 decimal places. |
+| `futures_mark` | Binance USDM futures mark price. Compare with `spot_mid` to gauge basis (contango/backwardation). |
+| `funding_rate` | Current funding rate. Positive = longs pay shorts (bullish consensus). Negative = bears pay longs. |
+| `volume_24h` | 24-hour trading volume in USD. |
+| `ts` | When this reference data was captured (Unix ms). Compare with `published_ts` to check staleness — typically under 10ms. |
+
+<Note>
+The `reference` field is only present on crypto events. Macro events (FOMC, CPI, etc.) do not include it.
+</Note>
+
+## Example: distribution message
+
+```json
+{
+  "type": "data",
+  "channel": "dist:btc-5m-2026-03-24-0830-et",
+  "data": {
+    "event_key": "btc-5m-2026-03-24-0830-et",
+    "seq": 2043,
+    "published_ts": 1774246512323,
+    "outcomes": [
+      {
+        "outcome": "0xf09bc369",
+        "label": "Bitcoin Up or Down - March 24, 8:30AM-8:35AM ET",
+        "kalshi_prob": null,
+        "poly_prob": 0.645,
+        "prob": 0.645,
+        "kalshi_depth_usd": 0,
+        "poly_depth_usd": 2871.65
+      }
+    ],
+    "total_kalshi_depth_usd": 0,
+    "total_poly_depth_usd": 2871.65,
+    "reference": {
+      "source": "binance",
+      "symbol": "BTCUSDT",
+      "spot_bid": 68641.30,
+      "spot_ask": 68641.31,
+      "spot_mid": 68641.30,
+      "futures_mark": 68723.51,
+      "funding_rate": -0.00002124,
+      "volume_24h": 951752117.03,
+      "ts": 1774246512319
+    }
+  }
+}
+```
+
+## Example: cross-venue matched hourly
+
+Hourly above/below events that exist on both venues show cross-venue probabilities:
+
+```json
+{
+  "type": "data",
+  "channel": "dist:btc-hourly-2026-03-24-0900-et",
+  "data": {
+    "event_key": "btc-hourly-2026-03-24-0900-et",
+    "seq": 87,
+    "published_ts": 1774260000123,
+    "outcomes": [
+      {
+        "outcome": "t68499.99",
+        "label": "Bitcoin above $68,500 at 9AM ET?",
+        "kalshi_prob": 0.585,
+        "poly_prob": 0.59,
+        "prob": 0.5869,
+        "kalshi_depth_usd": 3241.50,
+        "poly_depth_usd": 1856.20
+      }
+    ],
+    "total_kalshi_depth_usd": 45612.88,
+    "total_poly_depth_usd": 12340.56,
+    "reference": {
+      "source": "binance",
+      "symbol": "BTCUSDT",
+      "spot_bid": 68490.00,
+      "spot_ask": 68490.50,
+      "spot_mid": 68490.25,
+      "futures_mark": 68520.10,
+      "funding_rate": -0.00002124,
+      "volume_24h": 951752117.03,
+      "ts": 1774260000118
+    }
+  }
+}
+```
+
+## Event lifecycle
+
+Crypto events are **auto-discovered** from both venues. New events appear continuously — a new 5-minute window every 5 minutes, a new 15-minute window every 15 minutes, a new hourly window every hour.
+
+| Phase | Duration | What happens |
+|---|---|---|
+| **Active** | During the event window | Data streaming, distributions updating |
+| **Resolved** | 2 hours after event ends | Grace period for final settlement trades |
+| **Removed** | After resolution | Event stops appearing in catalog |
+
+Use `?feed=crypto&status=active` in the [catalog endpoint](/websocket/catalog) to get only live events.
+
+## Use cases
+
+**BTC 5-minute Polymarket trading bot.** The 5min BTC up/down markets on Polymarket update every 2-10ms at the distribution level. Combined with sub-10ms Binance spot price staleness, you get a fused view of BTC spot price + market-implied probability at near-real-time latency — everything a trading bot needs to place and adjust orders within each 5-minute window. Build mean-reversion or momentum signals on the probability-vs-spot relationship.
+
+**BTC and ETH 15-minute Kalshi + Polymarket arbitrage bot.** The 15min up/down events exist on both Kalshi and Polymarket, cross-venue matched by time window. Each message includes `venue_id` with exact execution identifiers for both venues. When `kalshi_prob` and `poly_prob` diverge on the same 15-minute BTC or ETH outcome, an arbitrage bot can immediately act on the spread. The `reference` field provides the Binance spot price to validate whether the divergence is justified by price movement.
+
+**Strike distance signals.** Compare `spot_mid` from the Binance reference with the prediction market's strike price to compute real-time distance-to-strike. A Kalshi "BTC above $68,500" market at 58% probability with spot at $68,490 means the market prices a 58% chance of a $10 move — your model may disagree.
+
+**Basis trading.** The `futures_mark` vs `spot_mid` spread (basis) indicates market sentiment. Widening contango during a prediction market probability spike suggests leveraged longs are driving the move. Combine with `funding_rate` to gauge crowding — useful context for any Kalshi or Polymarket crypto trading bot.
+
+**Volatility regime detection.** Monitor `volume_24h` alongside prediction market depth (`kalshi_depth_usd`, `poly_depth_usd`). Low prediction market depth during high BTC or ETH spot volume signals uncertainty — wider spreads and more opportunity for a trading bot. High depth during low volume signals consensus.
+
+**Multi-asset correlation.** BTC and ETH feeds run simultaneously with independent Binance enrichment. Track how ETH Polymarket probabilities respond to BTC spot moves (or vice versa) on both Kalshi and Polymarket to identify cross-asset momentum or hedging opportunities across 5min, 15min, and hourly timeframes.
+
+## Quick start
+
+```python
+import asyncio, websockets, json
+
+async def stream_btc():
+    async with websockets.connect("wss://feeds.oddpool.com/ws") as ws:
+        # Authenticate
+        await ws.send(json.dumps({"action": "auth", "api_key": "oddpool_..."}))
+        print(await ws.recv())
+
+        # Get active crypto events from catalog
+        # GET https://api.oddpool.com/feeds/catalog?feed=crypto&status=active
+
+        # Subscribe to a BTC 5-minute distribution
+        await ws.send(json.dumps({
+            "action": "subscribe",
+            "channels": ["dist:btc-5m-2026-03-24-0830-et"]
+        }))
+        print(await ws.recv())
+
+        # Stream messages
+        async for msg in ws:
+            data = json.loads(msg)
+            if data["type"] == "data":
+                payload = data["data"]
+                ref = payload.get("reference", {})
+                for o in payload.get("outcomes", []):
+                    print(f"BTC spot ${ref.get('spot_mid', '?'):,.2f} | "
+                          f"{o['label']}: {o['prob']:.1%} "
+                          f"(K:{o['kalshi_prob'] or '—'} P:{o['poly_prob'] or '—'})")
+
+asyncio.run(stream_btc())
+```

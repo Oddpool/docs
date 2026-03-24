@@ -5,7 +5,11 @@ description: "Stream real-time prediction market data over a single WebSocket co
 
 Stream real-time, normalized prediction market data over WebSocket. One connection gives you cross-venue orderbooks, trades, and probability distributions from both Kalshi and Polymarket -- no venue-specific code needed.
 
-Data is addressed by **what**, not where. You subscribe to `dist:fomc-2026-04-29`, not a venue-specific ticker. Both venues arrive on the same channel, tagged by `venue` field.
+Data is addressed by **what**, not where. You subscribe to `dist:fomc-2026-04-29` or `dist:btc-5m-2026-03-24-0830-et`, not a venue-specific ticker. Both venues arrive on the same channel, tagged by `venue` field.
+
+Two feeds are available:
+- [**Macro feed**](/websocket/macro-feed) — FOMC, CPI, NFP, GDP, unemployment, equities, commodities
+- [**Crypto feed**](/websocket/crypto-feed) — BTC and ETH prediction markets enriched with real-time Binance spot/futures data
 
 ```
 wss://feeds.oddpool.com/ws
