@@ -42,6 +42,12 @@ opportunities = response.json()
 
 `net_cents` is your per-contract profit after all fees.
 
+Each venue block includes execution-ready identifiers you can pass directly to the venue's trading API:
+
+- **Kalshi** — `market_ticker` is the ticker accepted by Kalshi's trade API.
+- **Polymarket** — `condition_id` is the on-chain condition; `yes_token_id` / `no_token_id` are the CLOB token IDs for placing orders.
+- **Opinion** — `child_market_id` is the categorical child market ID; `yes_token_id` / `no_token_id` are the trading-side token IDs.
+
 ```json
 [
   {
@@ -56,16 +62,23 @@ opportunities = response.json()
     "timestamp": "2026-03-11T14:30:00",
     "resolution_time": "2026-03-19T18:00:00",
     "kalshi": {
+      "market_ticker": "KXFEDDECISION-26MAR-C25",
       "yes_ask": 0.42, "no_ask": 0.60,
       "volume": 150000, "volume_24h": 12000,
       "open_interest": 80000
     },
     "polymarket": {
+      "condition_id": "0xde04b189b3f19eaccda02529a3ea67abfc46bff5c0c8fc42d8a2d0ed7b8f0d41",
+      "yes_token_id": "30767812841387255642892182147223249245545002662653079696958384408588201824258",
+      "no_token_id": "40302938956091099752849867077837976978448552504757012372843872340644441002059",
       "yes_ask": 0.39, "no_ask": 0.63,
       "volume": 200000.0, "volume_24h": 15000.0,
       "liquidity": 50000.0
     },
     "opinion": {
+      "child_market_id": null,
+      "yes_token_id": null,
+      "no_token_id": null,
       "yes_ask": null, "no_ask": null,
       "volume": null, "volume_24h": null,
       "liquidity": null

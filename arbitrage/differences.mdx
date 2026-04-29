@@ -41,6 +41,8 @@ diffs = response.json()
 
 ## Response
 
+Each row also includes full `kalshi`, `polymarket`, and `opinion` venue blocks (with prices, volume, and execution-ready identifiers like `market_ticker`, `condition_id`, and `yes_token_id` / `no_token_id`) — see the [Cross-venue arbitrage](/arbitrage/current) reference for the full venue-block shape.
+
 ```json
 [
   {
@@ -54,6 +56,9 @@ diffs = response.json()
     "label": "25bps cut",
     "timestamp": "2026-03-11T14:30:00",
     "resolution_time": "2026-03-19T18:00:00",
+    "kalshi": { "market_ticker": "KXFEDDECISION-26MAR-C25", "yes_ask": 0.42, "no_ask": 0.60, "...": "..." },
+    "polymarket": { "condition_id": "0xde04...", "yes_token_id": "307678...", "no_token_id": "403029...", "yes_ask": 0.39, "no_ask": 0.63, "...": "..." },
+    "opinion": { "child_market_id": null, "yes_token_id": null, "no_token_id": null, "...": "..." },
     "side": "YES",
     "side1": "Kalshi",
     "side2": "Polymarket",
