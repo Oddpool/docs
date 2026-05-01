@@ -7,7 +7,7 @@ api: "GET https://api.oddpool.com/arbitrage/current"
 Find markets where buying YES on one venue and NO on another costs less than 1 dollar combined. The gap is risk-free profit.
 
 <Tip>
-**Example:** "Will the Fed cut rates?" -- YES is 42c on Kalshi, NO is 55c on Polymarket. Buy both for 97c. One side pays 1 dollar, so you pocket 3c per contract guaranteed.
+**Example:** "Will the Fed cut rates?" -- YES is 32c on Kalshi, NO is 60c on Polymarket. Buy both for 92c, locking in an 8c gross spread. After ~3c in venue fees (Kalshi taker + Polymarket taker), you pocket about 5c per contract guaranteed.
 </Tip>
 
 ## Parameters
@@ -63,7 +63,7 @@ Each venue block includes execution-ready identifiers you can pass directly to t
     "resolution_time": "2026-03-19T18:00:00",
     "kalshi": {
       "market_ticker": "KXFEDDECISION-26MAR-C25",
-      "yes_ask": 0.42, "no_ask": 0.60,
+      "yes_ask": 0.32, "no_ask": 0.69,
       "volume": 150000, "volume_24h": 12000,
       "open_interest": 80000
     },
@@ -71,7 +71,7 @@ Each venue block includes execution-ready identifiers you can pass directly to t
       "condition_id": "0xde04b189b3f19eaccda02529a3ea67abfc46bff5c0c8fc42d8a2d0ed7b8f0d41",
       "yes_token_id": "30767812841387255642892182147223249245545002662653079696958384408588201824258",
       "no_token_id": "40302938956091099752849867077837976978448552504757012372843872340644441002059",
-      "yes_ask": 0.39, "no_ask": 0.63,
+      "yes_ask": 0.39, "no_ask": 0.60,
       "volume": 200000.0, "volume_24h": 15000.0,
       "liquidity": 50000.0
     },
@@ -83,11 +83,11 @@ Each venue block includes execution-ready identifiers you can pass directly to t
       "volume": null, "volume_24h": null,
       "liquidity": null
     },
-    "buy_yes_market": "polymarket",
-    "buy_no_market": "kalshi",
-    "gross_cents": 1.0,
-    "fee_cents": 0,
-    "net_cents": 1.0
+    "buy_yes_market": "kalshi",
+    "buy_no_market": "polymarket",
+    "gross_cents": 8.0,
+    "fee_cents": 3,
+    "net_cents": 5.0
   }
 ]
 ```
