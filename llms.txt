@@ -10,7 +10,7 @@ Docs: https://docs.oddpool.com
 
 ### Getting started
 - [Oddpool API](https://docs.oddpool.com/index.md): Prediction market data across Kalshi and Polymarket.
-- [Authentication](https://docs.oddpool.com/authentication.md): Authenticate API requests with your API key.
+- [Authentication](https://docs.oddpool.com/authentication.md): How to authenticate requests (`X-API-Key` header) and which endpoint groups (search, historical, WebSocket tiers, whale tracking, arbitrage) require which paid plan, with pricing.
 - [Rate limits](https://docs.oddpool.com/rate-limits.md): Per-tier rate limits, monthly quotas, and API key allowances.
 - [Error handling](https://docs.oddpool.com/errors.md): HTTP status codes and error response format.
 
