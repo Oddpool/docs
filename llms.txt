@@ -19,7 +19,7 @@ Docs: https://docs.oddpool.com
 - [Macro feed](https://docs.oddpool.com/websocket/macro-feed.md): Cross-venue matched macro economic events from Kalshi and Polymarket. FOMC, CPI, NFP, GDP, unemployment, equities, commodities.
 - [Crypto feed](https://docs.oddpool.com/websocket/crypto-feed.md): Bitcoin and Ethereum prediction markets enriched with real-time Binance spot and futures data. Auto-discovered and cross-venue matched events across 5m, 15m, and hourly timeframes. Every message includes spot bid/ask, futures mark price, funding rate, and 24h volume.
 - [Message reference](https://docs.oddpool.com/websocket/messages.md): Schema reference for dist, book, trade, and snapshot channel messages. Includes reference data fields for enriched feeds.
-- [Feed catalog](https://docs.oddpool.com/websocket/catalog.md): GET /feeds/catalog — discover available events and channel names. Filter by feed (macro, crypto) and status (active, upcoming, resolved).
+- [Feed catalog](https://docs.oddpool.com/websocket/catalog.md): REST endpoints for discovering every streamable event (macro and crypto) with its release timestamp, venues, outcomes, and pre-built channel names. Also includes a separate endpoint that decodes event_type tokens (cpi, fomc, nfp, ...) to label, agency, typical release time, and plain-English description.
 - [Limits and errors](https://docs.oddpool.com/websocket/limits.md): WebSocket connection limits by tier (Free/Pro/Premium/Enterprise) and error codes.
 
 ### Whale tracking

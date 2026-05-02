@@ -16,6 +16,15 @@ List all available feed events, grouped by feed vertical. Returns event keys, ve
   Filter by event status: `active`, `upcoming`, or `resolved`. Useful for crypto feeds where hundreds of short-lived events accumulate — use `status=active` to get only live events.
 </ParamField>
 
+<ParamField query="expand" type="string" default="">
+  Opt-in expansions, comma-separated. Supported values:
+  - `channels` — adds a ready-to-paste `subscribe_all` array to each event listing every channel you'd subscribe to.
+  - `outcomes` — replaces the integer `outcomes` count with the full outcome list (same shape as the single-event endpoint).
+  - `*` — all expansions.
+
+  The default response stays compact for browsing; agents subscribing to data should use `expand=channels` to skip the second API call.
+</ParamField>
+
 ## Example
 
 ```bash
@@ -23,69 +32,33 @@ List all available feed events, grouped by feed vertical. Returns event keys, ve
 curl -H "X-API-Key: oddpool_..." \
   "https://api.oddpool.com/feeds/catalog?feed=crypto&status=active"
 
-# All macro events (any status)
+# Macro events with ready-to-paste subscribe arrays
 curl -H "X-API-Key: oddpool_..." \
-  "https://api.oddpool.com/feeds/catalog?feed=macro"
+  "https://api.oddpool.com/feeds/catalog?feed=macro&expand=channels"
 ```
 
-## Response
+## Response (default)
 
 ```json
 {
   "feeds": {
-    "crypto": {
-      "description": "Crypto prediction markets enriched with Binance spot/futures",
-      "events": [
-        {
-          "event_key": "btc-5m-2026-03-24-0830-et",
-          "title": "BTC 5min Mar 24 8:30AM ET",
-          "type": "crypto",
-          "event_date": "2026-03-24",
-          "status": "active",
-          "venues": ["polymarket"],
-          "outcomes": 1,
-          "enrichment": "binance",
-          "channels": {
-            "dist": "dist:btc-5m-2026-03-24-0830-et",
-            "book": "book:btc-5m-2026-03-24-0830-et:{outcome_key}",
-            "trade": "trade:btc-5m-2026-03-24-0830-et:{outcome_key}",
-            "snapshot": "snapshot:btc-5m-2026-03-24-0830-et"
-          }
-        },
-        {
-          "event_key": "btc-hourly-2026-03-24-0900-et",
-          "title": "BTC Hourly Mar 24 9:00AM ET",
-          "type": "crypto",
-          "event_date": "2026-03-24",
-          "status": "active",
-          "venues": ["kalshi", "polymarket"],
-          "outcomes": 188,
-          "enrichment": "binance",
-          "channels": {
-            "dist": "dist:btc-hourly-2026-03-24-0900-et",
-            "book": "book:btc-hourly-2026-03-24-0900-et:{outcome_key}",
-            "trade": "trade:btc-hourly-2026-03-24-0900-et:{outcome_key}",
-            "snapshot": "snapshot:btc-hourly-2026-03-24-0900-et"
-          }
-        }
-      ]
-    },
     "macro": {
       "description": "Cross-venue macro economic prediction markets",
       "events": [
         {
-          "event_key": "fomc-2026-04-29",
-          "title": "FOMC April 2026",
+          "event_key": "fomc-2026-06-17",
+          "title": "FOMC June 2026",
           "type": "fomc",
-          "event_date": "2026-04-29",
-          "status": "upcoming",
+          "event_date": "2026-06-17",
+          "release_at": "2026-06-17T17:59:00+00:00",
+          "status": "active",
           "venues": ["kalshi", "polymarket"],
           "outcomes": 5,
           "channels": {
-            "dist": "dist:fomc-2026-04-29",
-            "book": "book:fomc-2026-04-29:{outcome_key}",
-            "trade": "trade:fomc-2026-04-29:{outcome_key}",
-            "snapshot": "snapshot:fomc-2026-04-29"
+            "dist": "dist:fomc-2026-06-17",
+            "snapshot": "snapshot:fomc-2026-06-17",
+            "book": "book:fomc-2026-06-17:{outcome_key}",
+            "trade": "trade:fomc-2026-06-17:{outcome_key}"
           }
         }
       ]
@@ -97,9 +70,71 @@ curl -H "X-API-Key: oddpool_..." \
 | Field | Description |
 |---|---|
 | `event_key` | Unique identifier for the event. Use this in channel subscriptions. |
-| `venues` | Which prediction market venues have data for this event. |
-| `enrichment` | External data source attached to every message. Only present for enriched feeds (e.g., `"binance"` for crypto). Macro events do not have this field. |
-| `channels` | Pre-built channel names. Replace `{outcome_key}` with a value from the single-event endpoint. |
+| `event_date` | Calendar date of the release (YYYY-MM-DD). |
+| `release_at` | Full ISO 8601 timestamp with timezone for the actual release moment. CPI is 8:30 ET (12:30 UTC), FOMC is 14:00 ET, etc. Use this for scheduling and timing logic. |
+| `venues` | Which prediction market venues have outcomes configured for this event. **Caveat**: this reflects "configured" not "currently quoting". An event listing both venues may have one quiet venue with no live book. |
+| `outcomes` | Number of outcomes (default) OR full outcome array (with `expand=outcomes`). |
+| `enrichment` | External data source attached to every message. Only present for enriched feeds (`"binance"` for crypto). Macro events do not have this field. |
+| `channels.dist` | Event-level — subscribe to this single channel to get the joint cross-venue distribution for all outcomes. Free tier. |
+| `channels.snapshot` | Event-level — full state reset every 60s. Pro tier. |
+| `channels.book` / `channels.trade` | **Templates with `{outcome_key}` placeholder**. Per-outcome channels — replace the placeholder with a value from `expand=outcomes` or the single-event endpoint. Pro tier. |
+
+## Response with `?expand=channels`
+
+Adds `subscribe_all` to each event — a ready-to-paste array of every channel for that event:
+
+```json
+{
+  "event_key": "fomc-2026-06-17",
+  "channels": {
+    "dist": "dist:fomc-2026-06-17",
+    "snapshot": "snapshot:fomc-2026-06-17",
+    "book": "book:fomc-2026-06-17:{outcome_key}",
+    "trade": "trade:fomc-2026-06-17:{outcome_key}",
+    "subscribe_all": [
+      "dist:fomc-2026-06-17",
+      "snapshot:fomc-2026-06-17",
+      "book:fomc-2026-06-17:cut_50",
+      "book:fomc-2026-06-17:cut_25",
+      "book:fomc-2026-06-17:hold",
+      "book:fomc-2026-06-17:hike_25",
+      "book:fomc-2026-06-17:hike_50",
+      "trade:fomc-2026-06-17:cut_50",
+      "trade:fomc-2026-06-17:cut_25",
+      "trade:fomc-2026-06-17:hold",
+      "trade:fomc-2026-06-17:hike_25",
+      "trade:fomc-2026-06-17:hike_50"
+    ]
+  }
+}
+```
+
+Use `subscribe_all` directly as the `channels` field of your WebSocket subscribe action. No more N+1 lookup for outcome keys.
+
+## Response with `?expand=outcomes`
+
+Replaces the integer `outcomes` count with the full outcome array (same shape as the single-event endpoint):
+
+```json
+{
+  "event_key": "fomc-2026-06-17",
+  "outcome_count": 5,
+  "outcomes": [
+    {
+      "outcome_key": "hold",
+      "label": "Fed maintains rate",
+      "venues": ["kalshi", "polymarket"],
+      "channels": {
+        "book": "book:fomc-2026-06-17:hold",
+        "trade": "trade:fomc-2026-06-17:hold"
+      }
+    },
+    "..."
+  ]
+}
+```
+
+When `expand=outcomes` is set, both `outcomes` (array) and `outcome_count` (number) are returned. Without expand, only `outcomes` (number) is returned.
 
 ---
 
@@ -111,33 +146,36 @@ curl -H "X-API-Key: oddpool_..." \
 GET https://api.oddpool.com/feeds/catalog/{event_key}
 ```
 
-Get a single event with its full outcome list and per-outcome channel names. Use this to find the `outcome_key` values for book and trade subscriptions.
+Get a single event with its full outcome list, ready-to-paste subscribe array, and per-outcome channel names.
 
 ### Example
 
 ```bash
 curl -H "X-API-Key: oddpool_..." \
-  "https://api.oddpool.com/feeds/catalog/fomc-2026-04-29"
+  "https://api.oddpool.com/feeds/catalog/fomc-2026-06-17"
 ```
 
 ### Response
 
 ```json
 {
-  "event_key": "fomc-2026-04-29",
-  "title": "FOMC April 2026",
+  "event_key": "fomc-2026-06-17",
+  "title": "FOMC June 2026",
   "type": "fomc",
   "feed": "macro",
-  "event_date": "2026-04-29",
-  "status": "upcoming",
+  "event_date": "2026-06-17",
+  "release_at": "2026-06-17T17:59:00+00:00",
+  "status": "active",
+  "venues": ["kalshi", "polymarket"],
+  "outcome_count": 5,
   "outcomes": [
     {
       "outcome_key": "hold",
       "label": "Fed maintains rate",
       "venues": ["kalshi", "polymarket"],
       "channels": {
-        "book": "book:fomc-2026-04-29:hold",
-        "trade": "trade:fomc-2026-04-29:hold"
+        "book": "book:fomc-2026-06-17:hold",
+        "trade": "trade:fomc-2026-06-17:hold"
       }
     },
     {
@@ -145,14 +183,79 @@ curl -H "X-API-Key: oddpool_..." \
       "label": "Cut 25bps",
       "venues": ["kalshi", "polymarket"],
       "channels": {
-        "book": "book:fomc-2026-04-29:cut_25",
-        "trade": "trade:fomc-2026-04-29:cut_25"
+        "book": "book:fomc-2026-06-17:cut_25",
+        "trade": "trade:fomc-2026-06-17:cut_25"
       }
     }
   ],
   "channels": {
-    "dist": "dist:fomc-2026-04-29",
-    "snapshot": "snapshot:fomc-2026-04-29"
+    "dist": "dist:fomc-2026-06-17",
+    "snapshot": "snapshot:fomc-2026-06-17",
+    "book": "book:fomc-2026-06-17:{outcome_key}",
+    "trade": "trade:fomc-2026-06-17:{outcome_key}",
+    "subscribe_all": [
+      "dist:fomc-2026-06-17",
+      "snapshot:fomc-2026-06-17",
+      "book:fomc-2026-06-17:hold",
+      "...": "..."
+    ]
   }
 }
 ```
+
+---
+
+## Decode event types
+
+<div id="feeds-event-types" />
+
+```
+GET https://api.oddpool.com/feeds/event-types
+```
+
+Returns a stable dictionary mapping each `event_type` token (e.g., `cpi`, `fomc`, `nfp`) to human-readable label, description, publishing agency, typical release time + timezone, source URL, and category. Use this to interpret event_type values without prior macro-economic knowledge.
+
+### Example
+
+```bash
+curl -H "X-API-Key: oddpool_..." "https://api.oddpool.com/feeds/event-types"
+```
+
+### Response
+
+```json
+{
+  "event_types": {
+    "cpi": {
+      "label": "Consumer Price Index",
+      "description": "US headline inflation. Measures the month-over-month or year-over-year change in a basket of consumer goods and services.",
+      "agency": "Bureau of Labor Statistics",
+      "release_local_time": "08:30",
+      "timezone": "America/New_York",
+      "release_url": "https://www.bls.gov/cpi/",
+      "category": "inflation",
+      "vertical": "macro"
+    },
+    "fomc": {
+      "label": "FOMC Rate Decision",
+      "description": "Federal Open Market Committee policy decision on the federal funds rate target range. Eight scheduled meetings per year.",
+      "agency": "Federal Reserve",
+      "release_local_time": "14:00",
+      "timezone": "America/New_York",
+      "release_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "category": "monetary_policy",
+      "vertical": "macro"
+    }
+  }
+}
+```
+
+| Field | Description |
+|---|---|
+| `label` | Human-readable name. Use in dashboards. |
+| `description` | One-paragraph plain-English explanation. |
+| `agency` | Who publishes the data. |
+| `release_local_time` | Time-of-day at which releases typically drop, in the named timezone. `null` for continuous markets (crypto). |
+| `timezone` | IANA timezone identifier for `release_local_time`. |
+| `category` | Higher-level grouping (`inflation`, `employment`, `growth`, `monetary_policy`, `markets`, `crypto`, `weather`). |
+| `vertical` | Which `feed=` filter this type belongs to. |

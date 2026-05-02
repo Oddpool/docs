@@ -6,8 +6,10 @@ description: "Schema reference for dist, book, trade, and snapshot channel messa
 Four channel types, one envelope. Every message arrives wrapped in:
 
 ```json
-{"type": "data", "channel": "dist:fomc-2026-04-29", "data": { ... }}
+{"channel": "dist:fomc-2026-04-29", "data": { ... }}
 ```
+
+The wrapper has exactly two top-level fields: `channel` (string) and `data` (object). Filter your message handler on `channel`, not on a `type` field — there is no `type` field in the wire format.
 
 ## Channel types
 
@@ -17,6 +19,10 @@ Four channel types, one envelope. Every message arrives wrapped in:
 | **book** | `book:fomc-2026-04-29:hold` | Normalized orderbook updates for one outcome | Pro |
 | **trade** | `trade:fomc-2026-04-29:hold` | Trade executions for one outcome | Pro |
 | **snapshot** | `snapshot:fomc-2026-04-29` | Full state reset every 60s for all outcomes | Pro |
+
+`dist` and `snapshot` are **event-level** channels — subscribe with just the `event_key`. `book` and `trade` are **per-outcome** channels — append `:{outcome_key}` (use `?expand=channels` on `/feeds/catalog` to get a ready-to-paste list).
+
+`snapshot` payload differs from `dist`: snapshot wraps the per-outcome list under `data.distribution` and adds full orderbook state per outcome. `dist` uses `data.outcomes`.
 
 ## Distribution
 
