@@ -4,12 +4,12 @@ description: "List all markets under one event."
 api: "GET https://api.oddpool.com/search/events/{event_id}/markets"
 ---
 
-List all markets under one event. Use after finding an event via search to see every tradeable outcome.
+List every outcome market under a known event. Useful once you have an `event_id` from [Search events](/search/search-events) and want all the tradable outcomes — for example, every strike on a Kalshi BTC event or every candidate on a Polymarket election.
 
 ## Parameters
 
 <ParamField path="event_id" type="string" required>
-  Event ID.
+  Event identifier (e.g. `KXFEDDECISION-26MAR`).
 </ParamField>
 
 ## Example
@@ -29,3 +29,7 @@ response = requests.get(
 markets = response.json()
 ```
 </CodeGroup>
+
+## Response
+
+Returns the same shape as [`/search/markets`](/search/search-markets), one row per outcome market under the event.

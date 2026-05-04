@@ -40,8 +40,9 @@ Docs: https://docs.oddpool.com
 
 ### Search
 - [Search overview](https://docs.oddpool.com/search/overview.md): Query, filter, and discover prediction markets across Kalshi and Polymarket.
-- [Search markets](https://docs.oddpool.com/search/search-markets.md): GET /search/markets — full-text search across all prediction markets with filtering and sorting.
-- [Search events](https://docs.oddpool.com/search/search-events.md): GET /search/events — search across prediction market events.
+- [Search series](https://docs.oddpool.com/search/series.md): GET /search/series — list Kalshi and Polymarket series (e.g. `KXBTC15M`, `btc-up-or-down-15m`). Matches title or `series_id` substring.
+- [Search markets](https://docs.oddpool.com/search/search-markets.md): GET /search/markets — find markets by full-text query, by `series_id`, or both. Supports `settled_after`/`settled_before` time filters.
+- [Search events](https://docs.oddpool.com/search/search-events.md): GET /search/events — find events by full-text query, by `series_id`, or both.
 - [Recent markets](https://docs.oddpool.com/search/recent-markets.md): GET /search/recent/markets — latest market listings without a search query.
 - [Recent events](https://docs.oddpool.com/search/recent-events.md): GET /search/recent/events — latest event listings without a search query.
 - [Event markets](https://docs.oddpool.com/search/event-markets.md): GET /search/events/{event_id}/markets — list all markets under one event.

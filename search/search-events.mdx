@@ -1,39 +1,72 @@
 ---
 title: "Search events"
-description: "Search across prediction market events."
+description: "Find events by text query, by series, or both."
 api: "GET https://api.oddpool.com/search/events"
 ---
 
-An event like "Fed Rate Decision March" contains markets for each possible outcome.
+An event groups all the outcome markets for one question. "Fed Rate Decision March 2026" is one event with markets for each rate-cut size; a single 15-minute Bitcoin event has up/down markets for that window.
+
+You must pass **either `q` or `series_id`** (or both). Requests with neither return `400`. To find a `series_id`, use [Search series](/search/series).
 
 ## Parameters
 
-<ParamField query="q" type="string" required>
-  Search query.
+<ParamField query="q" type="string">
+  Full-text search on `title`. Required when `series_id` is not provided.
+</ParamField>
+<ParamField query="series_id" type="string">
+  Filter to one series. Examples: `KXBTC15M`, `btc-up-or-down-15m`, `KXFEDDECISION`. Required when `q` is not provided.
 </ParamField>
 <ParamField query="exchange" type="string">
-  Filter: `kalshi` or `polymarket`.
+  `kalshi` or `polymarket`.
 </ParamField>
 <ParamField query="status" type="string" default="active">
-  Filter: `active` or `closed`.
+  `active` or `closed`.
 </ParamField>
 <ParamField query="category" type="string">
-  Filter by category.
+  Exact category match.
 </ParamField>
-<ParamField query="sort_by" type="string" default="relevance">
-  Sort order: `relevance`, `newest`, `markets`, `volume`, or `liquidity`.
+<ParamField query="min_volume" type="integer">
+  Minimum aggregate volume across child markets.
 </ParamField>
 <ParamField query="discovered_after" type="string">
-  ISO timestamp filter.
+  ISO timestamp filter on `discovered_at`.
+</ParamField>
+<ParamField query="sort_by" type="string" default="relevance">
+  `relevance`, `newest`, `markets`, `volume`, or `liquidity`. `relevance` requires `q`; without `q` the default is `newest`.
 </ParamField>
 <ParamField query="limit" type="integer" default="20">
-  Max results (1-100).
+  1-100.
 </ParamField>
 <ParamField query="offset" type="integer" default="0">
   Pagination offset.
 </ParamField>
 
-## Example
+## Examples
+
+### List active events in a series
+
+Use `series_id` to scope results — typical for "show me what's tradable in this series right now" workflows.
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/search/events?series_id=KXBTC15M&status=active&limit=10"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/search/events",
+    headers={"X-API-Key": "your_api_key"},
+    params={"series_id": "KXBTC15M", "status": "active", "limit": 10},
+)
+events = response.json()
+```
+</CodeGroup>
+
+### Free-text search
+
+Useful when you don't know the `series_id` or want to span series.
 
 <CodeGroup>
 ```bash cURL
@@ -46,7 +79,7 @@ import requests
 response = requests.get(
     "https://api.oddpool.com/search/events",
     headers={"X-API-Key": "your_api_key"},
-    params={"q": "election", "sort_by": "volume"}
+    params={"q": "election", "sort_by": "volume"},
 )
 events = response.json()
 ```
@@ -57,19 +90,24 @@ events = response.json()
 ```json
 [
   {
-    "event_id": "KXPRESIDENTIAL-28NOV",
+    "event_id": "KXBTC15M-26MAY040400",
     "exchange": "kalshi",
-    "title": "2028 Presidential Election",
-    "category": "politics",
+    "series_id": "KXBTC15M",
+    "title": "BTC Up or Down - 15 minutes",
+    "category": "Crypto",
     "status": "active",
-    "discovered_at": "2026-01-10T08:00:00",
-    "market_count": 12,
-    "total_volume": 5000000,
-    "total_liquidity": 1200000,
-    "market_questions": [
-      "Will the Democratic nominee win?",
-      "Will the Republican nominee win?"
-    ]
+    "image_url": "https://d1lvyva3zy5u58.cloudfront.net/series-images-webp/KXBTC15M.webp?size=sm",
+    "discovered_at": "2026-05-04T00:05:52Z",
+    "market_count": 1,
+    "total_volume": 0,
+    "total_liquidity": 0,
+    "market_questions": ["BTC price up in next 15 mins?"]
   }
 ]
 ```
+
+## Errors
+
+| Code | Reason |
+|---|---|
+| `400` | Neither `q` nor `series_id` provided. |

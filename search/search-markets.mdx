@@ -1,22 +1,29 @@
 ---
 title: "Search markets"
-description: "Full-text search across all prediction markets with filtering and sorting."
+description: "Find markets by text query, by series, or both."
 api: "GET https://api.oddpool.com/search/markets"
 ---
 
+You must pass **either `q` or `series_id`** (or both). Requests with neither return `400`.
+
+Use `q` for free-text search and `series_id` to scope results to one series. If you don't have a `series_id` yet, find one via [Search series](/search/series). To list every outcome under a single known event, use [Event markets](/search/event-markets) instead.
+
 ## Parameters
 
-<ParamField query="q" type="string" required>
-  Search query.
+<ParamField query="q" type="string">
+  Full-text search on `question`. Required when `series_id` is not provided.
+</ParamField>
+<ParamField query="series_id" type="string">
+  Filter to one series. Examples: `KXBTC15M`, `btc-up-or-down-15m`, `KXFEDDECISION`. Required when `q` is not provided.
 </ParamField>
 <ParamField query="exchange" type="string">
-  Filter: `kalshi` or `polymarket`.
+  `kalshi` or `polymarket`.
 </ParamField>
 <ParamField query="status" type="string" default="active">
-  Filter: `active` or `closed`.
+  `active` (still trading) or `closed` (settled with a result).
 </ParamField>
 <ParamField query="category" type="string">
-  Filter by category.
+  Exact category match.
 </ParamField>
 <ParamField query="min_volume" type="integer">
   Minimum volume.
@@ -24,20 +31,56 @@ api: "GET https://api.oddpool.com/search/markets"
 <ParamField query="min_liquidity" type="integer">
   Minimum liquidity.
 </ParamField>
-<ParamField query="sort_by" type="string" default="relevance">
-  Sort order: `relevance`, `newest`, `volume`, or `liquidity`.
+<ParamField query="settled_after" type="string">
+  ISO timestamp. Returns markets with `settled_at >= settled_after`. Pair with `status=closed` for backtest workflows.
+</ParamField>
+<ParamField query="settled_before" type="string">
+  ISO timestamp. Returns markets with `settled_at <= settled_before`.
 </ParamField>
 <ParamField query="discovered_after" type="string">
-  ISO timestamp filter. Use this to poll for new market listings.
+  ISO timestamp filter on `discovered_at`. For polling new listings.
+</ParamField>
+<ParamField query="sort_by" type="string" default="relevance">
+  `relevance`, `newest`, `volume`, or `liquidity`. `relevance` requires `q`; without `q` the default is `newest`.
 </ParamField>
 <ParamField query="limit" type="integer" default="20">
-  Max results (1-100).
+  1-100.
 </ParamField>
 <ParamField query="offset" type="integer" default="0">
   Pagination offset.
 </ParamField>
 
-## Example
+## Examples
+
+### Settled-window discovery for a backtest
+
+List the closed markets that resolved in a window for a known series. The returned `market_id` values feed directly into the [Kalshi historical](/kalshi/overview) endpoints.
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/search/markets?series_id=KXBTC15M&status=closed&settled_after=2026-04-25T00:00:00Z&limit=100"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/search/markets",
+    headers={"X-API-Key": "your_api_key"},
+    params={
+        "series_id": "KXBTC15M",
+        "status": "closed",
+        "settled_after": "2026-04-25T00:00:00Z",
+        "limit": 100,
+    },
+)
+markets = response.json()
+```
+</CodeGroup>
+
+### Free-text search
+
+Filter markets across series by keyword. Sort by volume to surface the most active.
 
 <CodeGroup>
 ```bash cURL
@@ -50,7 +93,7 @@ import requests
 response = requests.get(
     "https://api.oddpool.com/search/markets",
     headers={"X-API-Key": "your_api_key"},
-    params={"q": "fed rate", "exchange": "kalshi", "sort_by": "volume"}
+    params={"q": "fed rate", "exchange": "kalshi", "sort_by": "volume"},
 )
 markets = response.json()
 ```
@@ -61,20 +104,27 @@ markets = response.json()
 ```json
 [
   {
-    "market_id": "KXFEDDECISION-26MAR-T4.75",
+    "market_id": "KXBTC15M-26MAY020000-00",
     "exchange": "kalshi",
-    "question": "Will the Fed cut rates by 25bps in March?",
-    "category": "economics",
-    "status": "active",
-    "volume": 150000,
-    "liquidity": 80000,
-    "last_yes_price": "0.42",
-    "last_no_price": "0.60",
-    "has_orderbook": true,
-    "event_id": "KXFEDDECISION-26MAR",
-    "event_title": "Fed Rate Decision March 2026",
+    "series_id": "KXBTC15M",
+    "question": "BTC price up in next 15 mins?",
+    "category": null,
+    "status": "closed",
+    "volume": 375089,
+    "liquidity": 119393,
+    "last_yes_price": "0.9990",
+    "last_no_price": "0.0000",
+    "event_id": "KXBTC15M-26MAY020000",
+    "event_title": "BTC 15 min · $78,396.72 target",
     "slug": null,
-    "discovered_at": "2026-02-15T10:00:00"
+    "discovered_at": "2026-05-01T03:50:00Z",
+    "settled_at": "2026-05-02T04:00:26Z"
   }
 ]
 ```
+
+## Errors
+
+| Code | Reason |
+|---|---|
+| `400` | Neither `q` nor `series_id` provided. |

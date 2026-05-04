@@ -1,14 +1,37 @@
 ---
 title: "Search"
-description: "Query, filter, and discover prediction markets across Kalshi and Polymarket."
+description: "Discover and filter prediction markets across Kalshi and Polymarket."
 ---
 
 <Note>Available on all plans (Free tier included).</Note>
 
-Programmatic access to [Market Search](https://oddpool.com/search). Full-text search across prediction markets with filtering and sorting.
+Search covers three things: finding a *series* (a recurring or related group of events), finding *markets* and *events* inside one, and tailing recent listings. Most workflows that feed into the historical endpoints start with [Search series](/search/series).
 
-## What you can build
+| Endpoint | Use for |
+|---|---|
+| [Search series](/search/series) | Find a `series_id` like `KXBTC15M` or `btc-up-or-down-15m`. Start here if you don't already have one. |
+| [Search markets](/search/search-markets) | List markets by text query, by `series_id`, or both. |
+| [Search events](/search/search-events) | List events by text query, by `series_id`, or both. |
+| [Recent markets](/search/recent-markets) | Newest market listings, no query required. |
+| [Recent events](/search/recent-events) | Newest event listings, no query required. |
+| [Event markets](/search/event-markets) | List the outcome markets under one event. |
 
-- **Alert bot:** poll for new markets matching keywords using `discovered_after`
-- **Custom screener:** filter by volume, liquidity, exchange, category
-- **Market monitor:** track all markets under a specific event
+## Common workflows
+
+<CardGroup cols={2}>
+  <Card title="Backtest a strategy on a series" icon="chart-line" href="/search/search-markets">
+    Find the series you want, then list its closed markets in a time window. Feed the resulting `market_id` values into the [Kalshi](/kalshi/overview) or [Polymarket](/polymarket/overview) historical endpoints.
+  </Card>
+  <Card title="Build a probability dashboard" icon="grid" href="/search/search-events">
+    Scope to a series (e.g. one NBA market type or one Kalshi BTC resolution), pull active events, then poll their orderbooks.
+  </Card>
+  <Card title="Free-text discovery" icon="magnifying-glass" href="/search/search-markets">
+    Don't know a `series_id` yet? Search markets or events directly with `q=`. Useful for one-offs and cross-series queries.
+  </Card>
+  <Card title="Watch new listings" icon="rss" href="/search/recent-markets">
+    Tail the most recent listings on either exchange, or watermark a search by `discovered_after` to poll for new entries within a series.
+  </Card>
+  <Card title="See an event's outcomes" icon="list" href="/search/event-markets">
+    Once you have an `event_id`, list every outcome market under it.
+  </Card>
+</CardGroup>
