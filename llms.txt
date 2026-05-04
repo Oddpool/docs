@@ -1,6 +1,6 @@
 # Oddpool API
 
-Prediction market data across Kalshi and Polymarket. Real-time WebSocket feeds, whale tracking, arbitrage detection, search, and historical data.
+> Prediction market data across Kalshi and Polymarket. Real-time WebSocket feeds, whale tracking, arbitrage detection, search, and historical data.
 
 Base URL: https://api.oddpool.com
 WebSocket: wss://feeds.oddpool.com/ws
