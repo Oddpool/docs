@@ -4,15 +4,15 @@ description: "Latest event listings without a search query."
 api: "GET https://api.oddpool.com/search/recent/events"
 ---
 
-Latest event listings. Useful for new-listing alerts without a search query.
+The most recently discovered events across both venues. For watermarked polling within a known series, use [Search events](/search/search-events) with `discovered_after` instead.
 
 ## Parameters
 
 <ParamField query="exchange" type="string">
-  Filter: `kalshi` or `polymarket`.
+  `kalshi` or `polymarket`.
 </ParamField>
 <ParamField query="limit" type="integer" default="30">
-  Max results (1-100).
+  1-100.
 </ParamField>
 
 ## Example

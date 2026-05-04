@@ -59,6 +59,7 @@
             "group": "Search",
             "pages": [
               "search/overview",
+              "search/series",
               "search/search-markets",
               "search/search-events",
               "search/recent-markets",

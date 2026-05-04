@@ -1,0 +1,118 @@
+---
+title: "Search series"
+description: "Discover Kalshi and Polymarket series."
+api: "GET https://api.oddpool.com/search/series"
+---
+
+A *series* groups recurring or related events under one identifier. `KXBTC15M` is the Kalshi 15-minute Bitcoin up/down series — one event opens every 15 minutes and a new market is created for it. `btc-up-or-down-15m` is the Polymarket equivalent. `KXFEDDECISION` is the series for Kalshi Fed rate-decision events.
+
+Use this endpoint to find a `series_id`, then pass it to [Search markets](/search/search-markets) or [Search events](/search/search-events) to drill in.
+
+## Parameters
+
+<ParamField query="q" type="string">
+  Matches the series title (full-text) **or** the `series_id` (case-insensitive substring). `q=KXBTC` returns every Kalshi BTC series; `q=15m` returns every 15-minute series across both venues; `q=bitcoin` returns series whose title contains "Bitcoin".
+</ParamField>
+<ParamField query="exchange" type="string">
+  `kalshi` or `polymarket`.
+</ParamField>
+<ParamField query="category" type="string">
+  Exact match on `category`. Common values: `Crypto`, `Sports`, `Politics`, `Up or Down`.
+</ParamField>
+<ParamField query="status" type="string" default="active">
+  `active` or `closed`.
+</ParamField>
+<ParamField query="sort_by" type="string" default="title">
+  `title` (alphabetical) or `newest` (by `discovered_at`).
+</ParamField>
+<ParamField query="limit" type="integer" default="30">
+  1-100.
+</ParamField>
+<ParamField query="offset" type="integer" default="0">
+  Pagination offset.
+</ParamField>
+
+## Examples
+
+### Find all 15-minute crypto series across both venues
+
+A single call surfaces the matching Kalshi and Polymarket series side by side.
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/search/series?q=15m"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/search/series",
+    headers={"X-API-Key": "your_api_key"},
+    params={"q": "15m"},
+)
+series = response.json()
+```
+</CodeGroup>
+
+### Browse Polymarket sports series
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/search/series?exchange=polymarket&category=Sports&limit=50"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/search/series",
+    headers={"X-API-Key": "your_api_key"},
+    params={"exchange": "polymarket", "category": "Sports", "limit": 50},
+)
+series = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+[
+  {
+    "series_id": "KXBTC15M",
+    "exchange": "kalshi",
+    "title": "Bitcoin price up down",
+    "category": "Crypto",
+    "status": "active",
+    "n_events_total": 4285,
+    "n_events_active": 88,
+    "earliest_event_at": "2026-03-13T19:00:00Z",
+    "latest_event_at": "2026-05-04T00:05:52Z"
+  },
+  {
+    "series_id": "btc-up-or-down-15m",
+    "exchange": "polymarket",
+    "title": "BTC Up or Down 15 Min",
+    "category": "Up or Down",
+    "status": "active",
+    "n_events_total": 4310,
+    "n_events_active": 96,
+    "earliest_event_at": "2026-03-15T07:00:00Z",
+    "latest_event_at": "2026-05-04T01:23:19Z"
+  }
+]
+```
+
+## Field reference
+
+| Field | Description |
+|---|---|
+| `series_id` | Pass this to `?series_id=` on [Search markets](/search/search-markets) and [Search events](/search/search-events). |
+| `n_events_total` | Total events in this series. |
+| `n_events_active` | Events currently open for trading. |
+| `earliest_event_at` | Earliest event in this series. |
+| `latest_event_at` | Most recent event in this series. |
+
+<Note>
+  Not every event belongs to a series — about 15% are one-off markets (news markets, single-instance political markets) that aren't part of any recurring group. Find those via [Search events](/search/search-events) text search instead.
+</Note>

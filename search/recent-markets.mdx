@@ -4,15 +4,15 @@ description: "Latest market listings without a search query."
 api: "GET https://api.oddpool.com/search/recent/markets"
 ---
 
-Latest market listings. Useful for new-listing alerts without a search query.
+The most recently discovered markets across both venues — useful for new-listing alerts when you don't have a search query yet. For watermarked polling within a known series, use [Search markets](/search/search-markets) with `discovered_after` instead.
 
 ## Parameters
 
 <ParamField query="exchange" type="string">
-  Filter: `kalshi` or `polymarket`.
+  `kalshi` or `polymarket`.
 </ParamField>
 <ParamField query="limit" type="integer" default="30">
-  Max results (1-100).
+  1-100.
 </ParamField>
 
 ## Example
@@ -33,3 +33,27 @@ response = requests.get(
 markets = response.json()
 ```
 </CodeGroup>
+
+## Response
+
+```json
+[
+  {
+    "market_id": "KXBTC15M-26MAY040415-15",
+    "exchange": "kalshi",
+    "series_id": "KXBTC15M",
+    "question": "BTC price up in next 15 mins?",
+    "category": null,
+    "status": "active",
+    "volume": 0,
+    "liquidity": 0,
+    "last_yes_price": "0.0000",
+    "last_no_price": "0.0000",
+    "event_id": "KXBTC15M-26MAY040415",
+    "event_title": "BTC Up or Down - 15 minutes",
+    "slug": null,
+    "discovered_at": "2026-05-04T00:20:30Z",
+    "settled_at": null
+  }
+]
+```
