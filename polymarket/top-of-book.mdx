@@ -59,3 +59,7 @@ curl -H "X-API-Key: oddpool_..." \
   "pagination": { ... }
 }
 ```
+
+<Note>
+  `best_bid` and `best_ask` are `null` when the book had no resting orders at sample time. Filter client-side if you only want quoted snapshots.
+</Note>

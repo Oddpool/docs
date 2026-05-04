@@ -47,7 +47,7 @@ Use `q` for free-text search and `series_id` to scope results to one series. If 
   1-100.
 </ParamField>
 <ParamField query="offset" type="integer" default="0">
-  Pagination offset.
+  Pagination offset. The response is a bare JSON array — increment `offset` by `limit` until you receive an empty array.
 </ParamField>
 
 ## Examples

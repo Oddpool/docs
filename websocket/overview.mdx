@@ -62,3 +62,7 @@ Subscribe to channels by event. Events count as concurrent subscriptions -- unsu
 // Unsubscribe
 {"action": "unsubscribe", "channels": ["book:fomc-2026-04-29:hold"]}
 ```
+
+<Note>
+  `dist`, `book`, and `trade` are change-driven — messages emit only when the underlying state changes, so an idle channel is normal during quiet windows. For current state on connect, also subscribe to `snapshot:{event_key}`, which delivers a full state message every 60 seconds.
+</Note>
