@@ -63,6 +63,30 @@ Subscribe to channels by event. Events count as concurrent subscriptions -- unsu
 {"action": "unsubscribe", "channels": ["book:fomc-2026-04-29:hold"]}
 ```
 
+### Subscribe response shape
+
+`channels` lists the channels that were actually subscribed. If any submitted channel was dropped, the response also includes a `rejected` array — only present when there is at least one rejection. Each entry has a `channel` and a `reason`:
+
+| `reason` | When it fires |
+|---|---|
+| `unknown_event_key` | The `event_key` is not currently served. Use [Catalog](/websocket/catalog) to find valid keys; venue-native IDs (Kalshi market tickers, Polymarket condition IDs) are not event keys. |
+| `unknown_channel_type` | The prefix is not one of `dist`, `book`, `trade`, `snapshot`. |
+| `missing_event_key` | The channel string has no `event_key` after the type prefix. |
+
+```json
+// Mixed batch
+{"action": "subscribe", "channels": ["dist:fomc-2026-04-29", "dist:not-a-real-event"]}
+
+// Response
+{
+  "type": "subscribed",
+  "channels": ["dist:fomc-2026-04-29"],
+  "rejected": [
+    {"channel": "dist:not-a-real-event", "reason": "unknown_event_key", "event_key": "not-a-real-event"}
+  ]
+}
+```
+
 <Note>
   `dist`, `book`, and `trade` are change-driven — messages emit only when the underlying state changes, so an idle channel is normal during quiet windows. For current state on connect, also subscribe to `snapshot:{event_key}`, which delivers a full state message every 60 seconds.
 </Note>
