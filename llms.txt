@@ -47,6 +47,10 @@ Docs: https://docs.oddpool.com
 - [Recent events](https://docs.oddpool.com/search/recent-events.md): GET /search/recent/events — latest event listings without a search query.
 - [Event markets](https://docs.oddpool.com/search/event-markets.md): GET /search/events/{event_id}/markets — list all markets under one event.
 
+### OHLCV
+- [Market OHLCV](https://docs.oddpool.com/markets/ohlcv.md): GET /markets/{market_id}/ohlcv and GET /markets/ohlcv?market_ids=… — open/high/low/close/volume bars for one or many prediction markets. 6h native cadence; aggregated to 1d/1w/1m. Wrapped response includes window stats and rolling change deltas.
+- [Event OHLCV](https://docs.oddpool.com/events/ohlcv.md): GET /events/{event_id}/ohlcv — OHLCV bars for every outcome under an event in one request. For FOMC, election candidates, championship odds.
+
 ### Kalshi historical data
 - [Kalshi overview](https://docs.oddpool.com/kalshi/overview.md): Historical orderbook snapshots, top-of-book timeseries, and trade data for Kalshi markets.
 - [Historical orderbook](https://docs.oddpool.com/kalshi/orderbook.md): GET /historical/kalshi/orderbook — full orderbook snapshots with YES bids, NO bids, and derived best bid/ask.
