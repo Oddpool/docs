@@ -1,0 +1,101 @@
+---
+title: "Event OHLCV"
+description: "OHLCV bars for every outcome under an event in one request."
+api: "GET https://api.oddpool.com/events/{event_id}/ohlcv"
+---
+
+OHLCV bars for every outcome under an event in a single request. Works on Kalshi and Polymarket events. Same bar shape as [Market OHLCV](/markets/ohlcv) with one bar series per outcome.
+
+Bars go back to **2026-03-21** for both Kalshi and Polymarket. Events whose markets all resolved before that date won't have history.
+
+For one specific market or arbitrary ids across multiple events, use [Market OHLCV](/markets/ohlcv) — pass the ids you want.
+
+## Parameters
+
+<ParamField path="event_id" type="string" required>
+  Kalshi event ticker (e.g. `KXFEDDECISION-26JUN`) or Polymarket event slug.
+</ParamField>
+<ParamField query="from" type="string">
+  Window start (ISO 8601), inclusive. Defaults to 30 days ago. Mutually exclusive with `last`.
+</ParamField>
+<ParamField query="to" type="string">
+  Window end (ISO 8601), exclusive. Defaults to now. Mutually exclusive with `last`.
+</ParamField>
+<ParamField query="last" type="string">
+  Window shorthand, e.g. `14d`, `12h`, `4w`. See [Market OHLCV](/markets/ohlcv) for full syntax. Mutually exclusive with `from`/`to`.
+</ParamField>
+<ParamField query="interval" type="string" default="1d">
+  Bar size: `6h | 1d | 1w | 1m`. Sub-6h granularity is not available.
+</ParamField>
+
+`bars[]` and `stats` shape and semantics are identical to [Market OHLCV](/markets/ohlcv) — including nullable bar fields, units of `change_pct` vs `change_1d/7d/30d`, and bar-count behavior of `last=N`.
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/events/KXFEDDECISION-26JUN/ohlcv?last=14d&interval=1d"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/events/KXFEDDECISION-26JUN/ohlcv",
+    headers={"X-API-Key": "your_api_key"},
+    params={"last": "14d", "interval": "1d"},
+)
+event = response.json()
+for outcome in event["outcomes"]:
+    print(outcome["market_id"], outcome["outcome_label"], outcome["stats"]["change_pct"])
+```
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "event_id": "KXFEDDECISION-26JUN",
+  "exchange": "kalshi",
+  "event_title": "Fed decision in Jun 2026?",
+  "category": "Economics",
+  "scheduled_close_at": "2026-06-18T18:00:00+00:00",
+  "interval": "1d",
+  "snapshot_cadence": "6h",
+  "window_start": "2026-04-21T03:08:44+00:00",
+  "window_end": "2026-05-05T03:08:44+00:00",
+  "outcomes": [
+    {
+      "market_id": "KXFEDDECISION-26JUN-H0",
+      "outcome_label": "Will the Federal Reserve hold rates at the June 2026 meeting?",
+      "status": "active",
+      "result": null,
+      "stats": { "window_close": 0.95, "change_pct": 6.7416, "change_1d": 0.012, "...": "..." },
+      "bars": [
+        {"ts": "2026-04-21T00:00:00+00:00", "open": 0.89, "high": 0.91, "low": 0.87, "close": 0.90, "volume": 51230}
+      ]
+    },
+    {
+      "market_id": "KXFEDDECISION-26JUN-C25",
+      "outcome_label": "Will the Federal Reserve cut rates by 25bps at the June 2026 meeting?",
+      "status": "active",
+      "result": null,
+      "stats": { "window_close": 0.04, "change_pct": -50.0, "change_1d": -0.01, "...": "..." },
+      "bars": [
+        {"ts": "2026-04-21T00:00:00+00:00", "open": 0.08, "high": 0.09, "low": 0.07, "close": 0.08, "volume": 28104}
+      ]
+    }
+  ]
+}
+```
+
+<Note>
+  Each outcome's `close` is its own market's last YES price, not a normalized event probability. Across an event's outcomes, closes typically sum slightly above 1 (~1.02–1.08) due to per-market bid/ask spreads — a few percent over is normal and not a data issue.
+</Note>
+
+## Errors
+
+| Code | Reason |
+|---|---|
+| `400` | Invalid window or interval. |
+| `404` | `event_id` not in our pipeline, or the event has no markets in our snapshot pipeline. |

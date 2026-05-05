@@ -47,6 +47,10 @@ Docs: https://docs.oddpool.com
 - [Recent events](https://docs.oddpool.com/search/recent-events.md): GET /search/recent/events — latest event listings without a search query.
 - [Event markets](https://docs.oddpool.com/search/event-markets.md): GET /search/events/{event_id}/markets — list all markets under one event.
 
+### Historical bars
+- [Market OHLCV](https://docs.oddpool.com/markets/ohlcv.md): GET /markets/ohlcv?market_ids=… — OHLCV bars for one to 50 markets on Kalshi or Polymarket, in 6h, 1d, 1w, or 1m intervals. Returns price (probability), volume, and per-market window aggregates.
+- [Event OHLCV](https://docs.oddpool.com/events/ohlcv.md): GET /events/{event_id}/ohlcv — OHLCV bars for every outcome under one event in a single request. Works on Kalshi and Polymarket events; same bar shape as Market OHLCV with one series per outcome.
+
 ### Kalshi historical data
 - [Kalshi overview](https://docs.oddpool.com/kalshi/overview.md): Historical orderbook snapshots, top-of-book timeseries, and trade data for Kalshi markets.
 - [Historical orderbook](https://docs.oddpool.com/kalshi/orderbook.md): GET /historical/kalshi/orderbook — full orderbook snapshots with YES bids, NO bids, and derived best bid/ask.

@@ -1,0 +1,154 @@
+---
+title: "Market OHLCV"
+description: "Open/high/low/close/volume bars for one or many markets."
+api: "GET https://api.oddpool.com/markets/ohlcv"
+---
+
+OHLCV time series for markets on Kalshi or Polymarket. Pass 1 to 50 `market_ids` per request; the response is always an array of wrapped objects (metadata + bars + window stats). Markets not in our snapshot pipeline are silently omitted — compare submitted vs returned `market_ids` to detect.
+
+Probability values are 0–1 (e.g. `0.62` = 62%). Volume is contracts traded during the bar period. Underlying snapshot cadence is 6 hours; `1d` / `1w` / `1m` intervals are aggregated server-side.
+
+Bars go back to **2026-03-21** for both Kalshi and Polymarket. Markets that resolved before that date won't have history; coverage continues to grow forward.
+
+For one bar series per outcome under an event (FOMC dashboards, championship odds, etc.), see [Event OHLCV](/events/ohlcv).
+
+Don't have a `market_id`? Use [Search markets](/search/search-markets) or [Search series](/search/series).
+
+## Parameters
+
+<ParamField query="market_ids" type="string" required>
+  Comma-separated `market_id` list, 1 to 50 entries. Kalshi tickers (e.g. `KXFEDDECISION-26JUN-H0`) or Polymarket condition IDs (`0x…`).
+</ParamField>
+<ParamField query="from" type="string">
+  Window start (ISO 8601), inclusive. Defaults to 30 days ago. Mutually exclusive with `last`.
+</ParamField>
+<ParamField query="to" type="string">
+  Window end (ISO 8601), exclusive. Defaults to now. Mutually exclusive with `last`.
+</ParamField>
+<ParamField query="last" type="string">
+  Window shorthand. `<int><unit>` where unit is `h | d | w | m`. Examples: `30d`, `12h`, `4w`, `6m`. Mutually exclusive with `from`/`to`.
+</ParamField>
+<ParamField query="interval" type="string" default="1d">
+  Bar size. One of `6h` (native cadence), `1d`, `1w`, `1m`. Sub-6h granularity is not available — snapshot cadence is 6 hours.
+</ParamField>
+
+Maximum window is 365 days per request. `last=N` includes the in-progress current bucket — `last=14d&interval=1d` returns ~15 bars (14 completed days + today's partial). Trim the last bar if you only want completed periods.
+
+## Examples
+
+### One market, last 30 days
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/markets/ohlcv?market_ids=KXFEDDECISION-26JUN-H0&last=30d&interval=1d"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/markets/ohlcv",
+    headers={"X-API-Key": "your_api_key"},
+    params={"market_ids": "KXFEDDECISION-26JUN-H0", "last": "30d", "interval": "1d"},
+)
+data = response.json()
+```
+</CodeGroup>
+
+### Multiple markets in one call
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/markets/ohlcv?market_ids=KXFEDDECISION-26JUN-H0,KXFEDDECISION-26JUL-H0&last=14d&interval=1d"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/markets/ohlcv",
+    headers={"X-API-Key": "your_api_key"},
+    params={
+        "market_ids": "KXFEDDECISION-26JUN-H0,KXFEDDECISION-26JUL-H0",
+        "last": "14d",
+        "interval": "1d",
+    },
+)
+markets = response.json()
+```
+</CodeGroup>
+
+### Realized volatility over the last 30 days
+
+Standard deviation of daily intraday range, in probability points.
+
+<CodeGroup>
+```python Python
+import requests
+import statistics
+
+response = requests.get(
+    "https://api.oddpool.com/markets/ohlcv",
+    headers={"X-API-Key": "your_api_key"},
+    params={"market_ids": "KXFEDDECISION-26JUN-H0", "last": "30d", "interval": "1d"},
+)
+bars = [b for b in response.json()[0]["bars"] if b["high"] is not None]
+ranges = [b["high"] - b["low"] for b in bars]
+print("mean range:", statistics.mean(ranges))
+print("stdev:    ", statistics.stdev(ranges))
+```
+</CodeGroup>
+
+## Response
+
+```json
+[
+  {
+    "market_id": "KXFEDDECISION-26JUN-H0",
+    "exchange": "kalshi",
+    "question": "Will the Federal Reserve hold rates at the June 2026 meeting?",
+    "category": "Economics",
+    "event_id": "KXFEDDECISION-26JUN",
+    "event_title": "Fed decision in Jun 2026?",
+    "status": "active",
+    "result": null,
+    "scheduled_close_at": "2026-06-18T18:00:00+00:00",
+    "interval": "1d",
+    "snapshot_cadence": "6h",
+    "window_start": "2026-04-21T03:08:44+00:00",
+    "window_end": "2026-05-05T03:08:44+00:00",
+    "stats": {
+      "window_open": 0.89,
+      "window_close": 0.95,
+      "window_high": 0.95,
+      "window_low": 0.87,
+      "window_volume": 788507,
+      "change_pct": 6.7416,
+      "change_1d": 0.012,
+      "change_7d": 0.041,
+      "change_30d": 0.075
+    },
+    "bars": [
+      {"ts": "2026-04-21T00:00:00+00:00", "open": 0.89, "high": 0.91, "low": 0.87, "close": 0.90, "volume": 51230},
+      {"ts": "2026-04-22T00:00:00+00:00", "open": 0.90, "high": 0.92, "low": 0.89, "close": 0.91, "volume": 48910}
+    ]
+  }
+]
+```
+
+### Field reference
+
+| Field | Meaning |
+|---|---|
+| `bars[].ts` | Bar-start timestamp. For native `6h`, the actual snapshot timestamp; for aggregated intervals, the bucket start (`2026-05-04T00:00:00Z` for `1d`, etc.). |
+| `bars[].open / high / low / close` | Probabilities in `[0, 1]`. **Can be `null`** for a bucket with no underlying snapshots (very thin markets or snapshot gaps); skip or forward-fill in chart code. |
+| `bars[].volume` | Contracts traded during the bar. Aggregated intervals (`1d`, `1w`, `1m`) sum across the underlying 6h snapshots. **For per-period flow analysis, prefer `interval=6h`** — aggregated volume can look uneven across consecutive bars. |
+| `stats.window_*` | Aggregates over the requested window, derived from the bars. |
+| `stats.change_pct` | `(window_close - window_open) / window_open × 100`. **Percent** (e.g. `5.56` = +5.56%). |
+| `stats.change_1d / 7d / 30d` | **Probability-point deltas** in `[-1, +1]` (e.g. `0.05` = +5pp). Anchored to the latest snapshot — they answer "where is this vs N days ago" regardless of `from`/`to`/`last`. They will not match `change_pct` even when your window length matches. |
+
+## Errors
+
+| Code | Reason |
+|---|---|
+| `400` | `market_ids` empty, more than 50 ids, both `last` and `from`/`to` set, invalid interval, or invalid window. |

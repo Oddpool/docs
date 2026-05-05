@@ -68,6 +68,13 @@
             ]
           },
           {
+            "group": "Historical bars",
+            "pages": [
+              "markets/ohlcv",
+              "events/ohlcv"
+            ]
+          },
+          {
             "group": "Kalshi",
             "pages": [
               "kalshi/overview",
