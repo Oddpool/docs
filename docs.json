@@ -68,18 +68,6 @@
             ]
           },
           {
-            "group": "Markets",
-            "pages": [
-              "markets/ohlcv"
-            ]
-          },
-          {
-            "group": "Events",
-            "pages": [
-              "events/ohlcv"
-            ]
-          },
-          {
             "group": "Kalshi",
             "pages": [
               "kalshi/overview",
