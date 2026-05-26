@@ -16,7 +16,10 @@ Find markets where buying YES on one venue and NO on another costs less than 1 d
   Minimum net profit after fees, in cents. Only opportunities with `net_cents >= min_net_cents` are returned.
 </ParamField>
 <ParamField query="orderbook" type="boolean" default="false">
-  When `true`, attaches each leg's live ask ladder (top 10 levels) under `orderbook`, so you can size an order without a second call.
+  When `true`, attaches each leg's live ask ladder (top 25 levels) under `orderbook`, so you can size an order without a second call.
+</ParamField>
+<ParamField query="minutes" type="integer" deprecated>
+  Deprecated and ignored. The legacy endpoint used it as a staleness window; the live cache is always current, so it has no effect. Accepted only for backwards compatibility.
 </ParamField>
 
 ## Example
@@ -42,7 +45,13 @@ opportunities = response.json()
 
 A JSON array of opportunities, sorted by `net_cents` (highest first). An empty array means there are no current opportunities at or above your threshold. `net_cents` is your per-contract profit after all fees.
 
-The opportunity tells you the trade directly: **buy YES on `buy_yes_market`, buy NO on `buy_no_market`.** `yes_leg` / `no_leg` give the exact `(market, identifier, book_side)` to hit for each side, and `executable_size` / `max_profit_dollars` estimate how much you can fill and earn at the current depth.
+The opportunity tells you the trade directly: **buy YES on `buy_yes_market`, buy NO on `buy_no_market`.** `yes_leg` / `no_leg` give the exact `(market, identifier, book_side)` to hit for each side.
+
+`gross_cents` / `fee_cents` / `net_cents` are the **top-of-book** economics (per contract): `net_cents = round((1 − (best_yes_ask + best_no_ask)) × 100) − fees`. `executable_size` and `max_profit_dollars` are the **depth-aware** answer to "how much can I actually take, and what's it worth?" — they walk *both* legs' ask ladders together: at each price level they fill the smaller of the two available sizes, add `(level_net_after_fees / 100) × size` to the profit, and advance until a level pair is no longer profitable after fees (or the ladders run out). So `executable_size` is the total fillable contracts and `max_profit_dollars` the summed profit across all profitable levels.
+
+<Note>
+**`max_profit_dollars` is a conservative floor, not a guarantee.** It only considers the **top 25 levels** we cache, so true fillable depth beyond that isn't counted. Fees are applied **per level** using the same per-venue rates as `net_cents` (Kalshi sector taker, Polymarket per-market `feeSchedule.rate`, Opinion topic rate + floor). It does not model slippage from latency, partial fills, or order-placement minimums — size against `executable_size` and the attached `orderbook`, not blindly.
+</Note>
 
 Each venue block includes execution-ready identifiers you can pass directly to the venue's trading API:
 
@@ -118,5 +127,5 @@ Prices and order books are real-time; **volume and liquidity refresh roughly hou
 ```
 
 <Note>
-`orderbook` is only present when you pass `orderbook=true`. It carries the top 10 ask levels per leg — ask side only (the price ladder to *buy* that outcome). Token IDs above are truncated for readability; the API returns them in full.
+`orderbook` is only present when you pass `orderbook=true`. It carries the top 25 ask levels per leg — ask side only (the price ladder to *buy* that outcome). Token IDs above are truncated for readability; the API returns them in full.
 </Note>
