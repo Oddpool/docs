@@ -1,10 +1,10 @@
 ---
 title: "Cross-venue arbitrage"
-description: "Find risk-free cross-venue arbitrage opportunities."
+description: "Find risk-free cross-venue arbitrage opportunities, live from real-time order books."
 api: "GET https://api.oddpool.com/arbitrage/current"
 ---
 
-Find markets where buying YES on one venue and NO on another costs less than 1 dollar combined. The gap is risk-free profit.
+Find markets where buying YES on one venue and NO on another costs less than 1 dollar combined. The gap is risk-free profit. Prices and order books are **live** — recomputed continuously from real-time venue WebSocket feeds (Kalshi, Polymarket, Opinion), not a periodic snapshot.
 
 <Tip>
 **Example:** "Will the Fed cut rates?" -- YES is 32c on Kalshi, NO is 60c on Polymarket. Buy both for 92c, locking in an 8c gross spread. After ~3c in venue fees (Kalshi taker + Polymarket taker), you pocket about 5c per contract guaranteed.
@@ -15,8 +15,11 @@ Find markets where buying YES on one venue and NO on another costs less than 1 d
 <ParamField query="min_net_cents" type="float" default="0">
   Minimum net profit after fees, in cents.
 </ParamField>
-<ParamField query="minutes" type="integer" default="10000">
-  Lookback window in minutes.
+<ParamField query="orderbook" type="boolean" default="false">
+  When `true`, attaches each leg's live ask ladder (top 25 levels) under `orderbook`, so you can size an order without a second call.
+</ParamField>
+<ParamField query="minutes" type="integer" deprecated>
+  Deprecated and ignored. The legacy endpoint used it as a staleness window; the live cache is always current, so it has no effect. Accepted only for backwards compatibility.
 </ParamField>
 
 ## Example
@@ -24,7 +27,7 @@ Find markets where buying YES on one venue and NO on another costs less than 1 d
 <CodeGroup>
 ```bash cURL
 curl -H "X-API-Key: your_api_key" \
-  "https://api.oddpool.com/arbitrage/current?min_net_cents=0.5&minutes=10"
+  "https://api.oddpool.com/arbitrage/current?min_net_cents=0.5&orderbook=true"
 ```
 ```python Python
 import requests
@@ -32,7 +35,7 @@ import requests
 response = requests.get(
     "https://api.oddpool.com/arbitrage/current",
     headers={"X-API-Key": "your_api_key"},
-    params={"min_net_cents": 0.5, "minutes": 10}
+    params={"min_net_cents": 0.5, "orderbook": True},
 )
 opportunities = response.json()
 ```
@@ -40,7 +43,15 @@ opportunities = response.json()
 
 ## Response
 
-`net_cents` is your per-contract profit after all fees.
+A JSON array of opportunities, sorted by `net_cents` (highest first). An empty array means there are no current opportunities at or above your threshold. `net_cents` is your per-contract profit after all fees.
+
+The opportunity tells you the trade directly: **buy YES on `buy_yes_market`, buy NO on `buy_no_market`.** `yes_leg` / `no_leg` give the exact `(market, identifier, book_side)` to hit for each side.
+
+`gross_cents` / `fee_cents` / `net_cents` are the **top-of-book** economics (per contract): `net_cents = round((1 − (best_yes_ask + best_no_ask)) × 100) − fees`. `executable_size` and `max_profit_dollars` are the **depth-aware** answer to "how much can I actually take, and what's it worth?" — they walk *both* legs' ask ladders together: at each price level they fill the smaller of the two available sizes, add `(level_net_after_fees / 100) × size` to the profit, and advance until a level pair is no longer profitable after fees (or the ladders run out). So `executable_size` is the total fillable contracts and `max_profit_dollars` the summed profit across all profitable levels.
+
+<Note>
+**`max_profit_dollars` is a conservative floor, not a guarantee.** It only considers the **top 25 levels**, so true fillable depth beyond that isn't counted. Fees are applied **per level** using the same per-venue rates as `net_cents` (Kalshi sector taker, Polymarket per-market `feeSchedule.rate`, Opinion topic rate + floor). It does not model slippage from latency, partial fills, or order-placement minimums — size against `executable_size` and the attached `orderbook`, not blindly.
+</Note>
 
 Each venue block includes execution-ready identifiers you can pass directly to the venue's trading API:
 
@@ -48,46 +59,73 @@ Each venue block includes execution-ready identifiers you can pass directly to t
 - **Polymarket** — `condition_id` is the on-chain condition; `yes_token_id` / `no_token_id` are the CLOB token IDs for placing orders.
 - **Opinion** — `child_market_id` is the categorical child market ID; `yes_token_id` / `no_token_id` are the trading-side token IDs.
 
+<Note>
+Prices and order books are real-time; **volume and liquidity refresh roughly hourly**. Opinion does not expose 24h volume or liquidity, so `volume_24h` and `liquidity` are `null` for Opinion legs. `timestamp` is when the opportunity was last recomputed.
+</Note>
+
 ```json
 [
   {
-    "event_id": 42,
-    "event_title": "Fed rate decision March",
-    "kalshi_event_ticker": "KXFEDDECISION-26MAR",
-    "polymarket_event_slug": "fed-rate-march",
-    "opinion_market_id": null,
-    "market_type": "binary",
-    "outcome_key": "yes",
-    "label": "25bps cut",
-    "timestamp": "2026-03-11T14:30:00",
-    "resolution_time": "2026-03-19T18:00:00",
+    "event_id": "stanley-cup-2026",
+    "event_title": "NHL Stanley Cup Champion 2026",
+    "outcome_key": "colorado_avalanche",
+    "label": "Colorado Avalanche",
+    "timestamp": "2026-05-26T02:21:54.190359",
+    "market_type": null,
+    "resolution_time": "2026-06-29T19:00:00",
+    "kalshi_event_ticker": "KXNHL-26",
+    "polymarket_event_slug": "2026-nhl-stanley-cup-champion",
+    "opinion_market_id": 345,
     "kalshi": {
-      "market_ticker": "KXFEDDECISION-26MAR-C25",
-      "yes_ask": 0.32, "no_ask": 0.69,
-      "volume": 150000, "volume_24h": 12000,
-      "open_interest": 80000
+      "market_ticker": "KXNHL-26-COL",
+      "yes_ask": 0.07, "no_ask": 0.95,
+      "volume": 6352005, "volume_24h": 320871,
+      "open_interest": 3146772
     },
     "polymarket": {
-      "condition_id": "0xde04b189b3f19eaccda02529a3ea67abfc46bff5c0c8fc42d8a2d0ed7b8f0d41",
-      "yes_token_id": "30767812841387255642892182147223249245545002662653079696958384408588201824258",
-      "no_token_id": "40302938956091099752849867077837976978448552504757012372843872340644441002059",
-      "yes_ask": 0.39, "no_ask": 0.60,
-      "volume": 200000.0, "volume_24h": 15000.0,
-      "liquidity": 50000.0
+      "condition_id": "0xf8f63bb47b2a7c2e0c1be3cedf4075079b11c07476d76a9469065b0c4791961a",
+      "yes_token_id": "101738487887518832481587379955535423775326921556438741919099866785354159699479",
+      "no_token_id": "87978082071653935678874296685430503892266481242311708420787197372467948088235",
+      "yes_ask": 0.055, "no_ask": 0.948,
+      "volume": 15219511.07, "volume_24h": 215850.28,
+      "liquidity": 50818.82
     },
     "opinion": {
-      "child_market_id": null,
-      "yes_token_id": null,
-      "no_token_id": null,
-      "yes_ask": null, "no_ask": null,
-      "volume": null, "volume_24h": null,
-      "liquidity": null
+      "child_market_id": 5566,
+      "yes_token_id": "109494079162951671873858278805080808339824558282001815297323400464995130701684",
+      "no_token_id": "74166100071861466695478367383768425561540521028754831523233794115776851950059",
+      "yes_ask": 0.21, "no_ask": 0.782,
+      "volume": 38765.84, "volume_24h": null, "liquidity": null
     },
-    "buy_yes_market": "kalshi",
-    "buy_no_market": "polymarket",
-    "gross_cents": 8.0,
-    "fee_cents": 3,
-    "net_cents": 5.0
+    "buy_yes_market": "polymarket",
+    "buy_no_market": "opinion",
+    "gross_cents": 16.3,
+    "fee_cents": 2,
+    "net_cents": 14.3,
+    "executable_size": 97.87,
+    "max_profit_dollars": 13.94,
+    "yes_leg": { "market": "polymarket", "identifier": "101738487887518832481587379955535423775326921556438741919099866785354159699479", "book_side": "ask" },
+    "no_leg":  { "market": "opinion",    "identifier": "74166100071861466695478367383768425561540521028754831523233794115776851950059", "book_side": "ask" },
+    "orderbook": {
+      "as_of": "2026-05-26T02:21:47.062741",
+      "yes": {
+        "market": "polymarket",
+        "asks": [
+          { "price": 0.055, "size": 42.97 },
+          { "price": 0.056, "size": 14989.0 }
+        ]
+      },
+      "no": {
+        "market": "opinion",
+        "asks": [
+          { "price": 0.782, "size": 97.87 }
+        ]
+      }
+    }
   }
 ]
 ```
+
+<Note>
+`orderbook` is only present when you pass `orderbook=true`. It carries the top 25 ask levels per leg — ask side only (the price ladder to *buy* that outcome).
+</Note>
