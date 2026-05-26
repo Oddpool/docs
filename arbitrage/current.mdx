@@ -13,7 +13,7 @@ Find markets where buying YES on one venue and NO on another costs less than 1 d
 ## Parameters
 
 <ParamField query="min_net_cents" type="float" default="0">
-  Minimum net profit after fees, in cents. Only opportunities with `net_cents >= min_net_cents` are returned.
+  Minimum net profit after fees, in cents.
 </ParamField>
 <ParamField query="orderbook" type="boolean" default="false">
   When `true`, attaches each leg's live ask ladder (top 25 levels) under `orderbook`, so you can size an order without a second call.
@@ -50,7 +50,7 @@ The opportunity tells you the trade directly: **buy YES on `buy_yes_market`, buy
 `gross_cents` / `fee_cents` / `net_cents` are the **top-of-book** economics (per contract): `net_cents = round((1 − (best_yes_ask + best_no_ask)) × 100) − fees`. `executable_size` and `max_profit_dollars` are the **depth-aware** answer to "how much can I actually take, and what's it worth?" — they walk *both* legs' ask ladders together: at each price level they fill the smaller of the two available sizes, add `(level_net_after_fees / 100) × size` to the profit, and advance until a level pair is no longer profitable after fees (or the ladders run out). So `executable_size` is the total fillable contracts and `max_profit_dollars` the summed profit across all profitable levels.
 
 <Note>
-**`max_profit_dollars` is a conservative floor, not a guarantee.** It only considers the **top 25 levels** we cache, so true fillable depth beyond that isn't counted. Fees are applied **per level** using the same per-venue rates as `net_cents` (Kalshi sector taker, Polymarket per-market `feeSchedule.rate`, Opinion topic rate + floor). It does not model slippage from latency, partial fills, or order-placement minimums — size against `executable_size` and the attached `orderbook`, not blindly.
+**`max_profit_dollars` is a conservative floor, not a guarantee.** It only considers the **top 25 levels**, so true fillable depth beyond that isn't counted. Fees are applied **per level** using the same per-venue rates as `net_cents` (Kalshi sector taker, Polymarket per-market `feeSchedule.rate`, Opinion topic rate + floor). It does not model slippage from latency, partial fills, or order-placement minimums — size against `executable_size` and the attached `orderbook`, not blindly.
 </Note>
 
 Each venue block includes execution-ready identifiers you can pass directly to the venue's trading API:
@@ -84,16 +84,16 @@ Prices and order books are real-time; **volume and liquidity refresh roughly hou
     },
     "polymarket": {
       "condition_id": "0xf8f63bb47b2a7c2e0c1be3cedf4075079b11c07476d76a9469065b0c4791961a",
-      "yes_token_id": "10173848788751883248158737995553542377532692155643874191909986678535...",
-      "no_token_id": "87978082071653935678874296685430503892266481242311708420787197372467...",
+      "yes_token_id": "101738487887518832481587379955535423775326921556438741919099866785354159699479",
+      "no_token_id": "87978082071653935678874296685430503892266481242311708420787197372467948088235",
       "yes_ask": 0.055, "no_ask": 0.948,
       "volume": 15219511.07, "volume_24h": 215850.28,
       "liquidity": 50818.82
     },
     "opinion": {
       "child_market_id": 5566,
-      "yes_token_id": "10949407916295167187385827880508080833982455828200181529732340046499...",
-      "no_token_id": "74166100071861466695478367383768425561540521028754831523233794115776...",
+      "yes_token_id": "109494079162951671873858278805080808339824558282001815297323400464995130701684",
+      "no_token_id": "74166100071861466695478367383768425561540521028754831523233794115776851950059",
       "yes_ask": 0.21, "no_ask": 0.782,
       "volume": 38765.84, "volume_24h": null, "liquidity": null
     },
@@ -104,8 +104,8 @@ Prices and order books are real-time; **volume and liquidity refresh roughly hou
     "net_cents": 14.3,
     "executable_size": 97.87,
     "max_profit_dollars": 13.94,
-    "yes_leg": { "market": "polymarket", "identifier": "10173848788751883248...", "book_side": "ask" },
-    "no_leg":  { "market": "opinion",    "identifier": "74166100071861466695...", "book_side": "ask" },
+    "yes_leg": { "market": "polymarket", "identifier": "101738487887518832481587379955535423775326921556438741919099866785354159699479", "book_side": "ask" },
+    "no_leg":  { "market": "opinion",    "identifier": "74166100071861466695478367383768425561540521028754831523233794115776851950059", "book_side": "ask" },
     "orderbook": {
       "as_of": "2026-05-26T02:21:47.062741",
       "yes": {
@@ -127,5 +127,5 @@ Prices and order books are real-time; **volume and liquidity refresh roughly hou
 ```
 
 <Note>
-`orderbook` is only present when you pass `orderbook=true`. It carries the top 25 ask levels per leg — ask side only (the price ladder to *buy* that outcome). Token IDs above are truncated for readability; the API returns them in full.
+`orderbook` is only present when you pass `orderbook=true`. It carries the top 25 ask levels per leg — ask side only (the price ladder to *buy* that outcome).
 </Note>
