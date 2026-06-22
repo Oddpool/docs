@@ -1,0 +1,107 @@
+---
+title: "Add event"
+description: "Subscribe to an event so its whale trades appear in your feed and alerts."
+api: "POST https://api.oddpool.com/whales/user/events/by-ticker"
+---
+
+Adds an event to your "My Events" watchlist. The `exchange` and `event_ticker` map directly onto the `exchange` and `event_id` fields returned by [Search events](/search/search-events), so you can pipe a search result straight into a subscription.
+
+If we have never seen the event before, we fetch its metadata from the exchange and start tracking it. Markets under the event are discovered automatically, so whale trades begin flowing into your [feed](/whales/get-feed) shortly after.
+
+## Body parameters
+
+<ParamField body="exchange" type="string" required>
+  `kalshi` or `polymarket`.
+</ParamField>
+<ParamField body="event_ticker" type="string" required>
+  The event identifier. This is the `event_id` value from a [Search events](/search/search-events) result: a Kalshi event ticker (for example `KXBTCD-26JAN01`) or a Polymarket event slug (for example `btc-up-or-down-15m-1782248400`).
+</ParamField>
+<ParamField body="whale_threshold_usd" type="number">
+  Minimum trade size, in USD, for a trade on this event to count as a whale. Defaults to your account default when omitted.
+</ParamField>
+<ParamField body="notify_on_whale_trade" type="boolean" default="true">
+  Whether to send alerts for whale trades on this event.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://api.oddpool.com/whales/user/events/by-ticker" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "exchange": "kalshi",
+    "event_ticker": "KXBTCD-26JAN01",
+    "whale_threshold_usd": 5000
+  }'
+```
+```python Python
+import requests
+
+# 1. Discover an event
+hit = requests.get(
+    "https://api.oddpool.com/search/events",
+    headers={"X-API-Key": "your_api_key"},
+    params={"q": "bitcoin", "status": "active", "limit": 1},
+).json()[0]
+
+# 2. Subscribe using the search identifiers verbatim
+response = requests.post(
+    "https://api.oddpool.com/whales/user/events/by-ticker",
+    headers={"X-API-Key": "your_api_key"},
+    json={
+        "exchange": hit["exchange"],
+        "event_ticker": hit["event_id"],
+        "whale_threshold_usd": 5000,
+    },
+)
+data = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "success": true,
+  "event_id": 65,
+  "event_ticker": "KXBTCD-26JAN01",
+  "event_title": "Bitcoin price on Jan 1, 2026",
+  "platform": "kalshi",
+  "message": "Event added to tracking. Markets will be discovered automatically."
+}
+```
+
+The numeric `event_id` is your internal tracking id. You can pass it to [Update event](/whales/update-event), or unsubscribe with either the `exchange`/`event_ticker` pair or this numeric id (see [Remove event](/whales/remove-event)).
+
+## Adding by URL
+
+If you have a Kalshi or Polymarket page URL instead of a search result, post it to `POST /whales/user/events/by-url` with the same optional fields. We parse the event out of the URL.
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://api.oddpool.com/whales/user/events/by-url" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://kalshi.com/markets/kxbtcd/bitcoin-price"}'
+```
+```python Python
+import requests
+
+response = requests.post(
+    "https://api.oddpool.com/whales/user/events/by-url",
+    headers={"X-API-Key": "your_api_key"},
+    json={"url": "https://kalshi.com/markets/kxbtcd/bitcoin-price"},
+)
+```
+</CodeGroup>
+
+## Errors
+
+| Status | Reason |
+| ------ | ------ |
+| `400` | Invalid `exchange`, malformed `event_ticker`, the event is already resolved, or you already track it. |
+| `401` | Missing or invalid API key. |
+| `403` | Your plan does not include whale tracking, or your subscription is inactive. |
+| `404` | The event could not be found on the exchange. |
