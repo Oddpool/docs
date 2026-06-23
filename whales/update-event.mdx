@@ -1,10 +1,10 @@
 ---
 title: "Update event"
-description: "Change the whale threshold or alert setting for a tracked event."
+description: "Change the whale threshold for a tracked event."
 api: "PATCH https://api.oddpool.com/whales/user/events/{event_id}"
 ---
 
-Updates the per-event settings for an event you already track. Use it to raise or lower the dollar threshold that defines a whale on this event, or to mute and unmute its alerts.
+Updates the per-event settings for an event you already track. Use it to raise or lower the dollar threshold that defines a whale on this event.
 
 ## Path parameters
 
@@ -14,13 +14,8 @@ Updates the per-event settings for an event you already track. Use it to raise o
 
 ## Body parameters
 
-Send the fields you want to change. Omitted fields are left untouched.
-
 <ParamField body="whale_threshold_usd" type="number">
   Minimum trade size, in USD, for a trade on this event to count as a whale.
-</ParamField>
-<ParamField body="notify_on_whale_trade" type="boolean">
-  Whether to send alerts for whale trades on this event.
 </ParamField>
 
 ## Example
