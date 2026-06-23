@@ -101,7 +101,8 @@ response = requests.post(
 
 | Status | Reason |
 | ------ | ------ |
-| `400` | Invalid `exchange`, malformed `event_ticker`, the event is already resolved, or you already track it. |
+| `400` | Malformed `event_ticker`, the event is already resolved, or you already track it. |
 | `401` | Missing or invalid API key. |
 | `403` | Your plan does not include whale tracking, or your subscription is inactive. |
 | `404` | The event could not be found on the exchange. |
+| `422` | `exchange` is not `kalshi` or `polymarket`, or a required field is missing. |
