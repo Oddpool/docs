@@ -15,3 +15,18 @@ Programmatic access to [Whale Tracker](https://oddpool.com/whales). Build tradin
 - **Copy trading:** track specific events and mirror whale positioning in real time
 - **Market sentiment analysis:** correlate whale trade volume and direction with price movements to build sentiment models
 - **Event-level risk monitoring:** watch for unusual whale activity spikes that may signal new information ahead of resolution
+
+## Managing your tracked events
+
+"My Events" is your personal watchlist. Whale alerts and the personalized [feed](/whales/get-feed) are scoped to the events you track, each with its own dollar threshold. You can manage this list programmatically, which is ideal for automating daily rotation (drop stale events, add fresh ones) instead of editing it by hand.
+
+The workflow pairs directly with [Search](/search/overview):
+
+1. Discover events with [`GET /search/events`](/search/search-events). Each result has an `exchange` and an `event_id` (a Kalshi ticker or Polymarket slug).
+2. Subscribe with [`POST /whales/user/events/by-ticker`](/whales/add-event), passing that same `exchange` and `event_id`.
+3. Review your watchlist with [`GET /whales/user/events`](/whales/list-events).
+4. Adjust a threshold with [`PATCH /whales/user/events/{event_id}`](/whales/update-event), or unsubscribe with [`DELETE /whales/user/events/by-ticker/{exchange}/{event_ticker}`](/whales/remove-event).
+
+<Note>
+All management endpoints authenticate with your `X-API-Key`, the same key used for every other endpoint. The key identifies your account, so requests only ever read or change your own watchlist. Each call counts toward your plan [rate limits](/rate-limits).
+</Note>

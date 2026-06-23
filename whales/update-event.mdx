@@ -1,0 +1,59 @@
+---
+title: "Update event"
+description: "Change the whale threshold for a tracked event."
+api: "PATCH https://api.oddpool.com/whales/user/events/{event_id}"
+---
+
+Updates the per-event settings for an event you already track. Use it to raise or lower the dollar threshold that defines a whale on this event.
+
+## Path parameters
+
+<ParamField path="event_id" type="integer" required>
+  The numeric tracking id, as returned by [List events](/whales/list-events) or [Add event](/whales/add-event).
+</ParamField>
+
+## Body parameters
+
+<ParamField body="whale_threshold_usd" type="number">
+  Minimum trade size, in USD, for a trade on this event to count as a whale.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://api.oddpool.com/whales/user/events/65" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"whale_threshold_usd": 10000}'
+```
+```python Python
+import requests
+
+response = requests.patch(
+    "https://api.oddpool.com/whales/user/events/65",
+    headers={"X-API-Key": "your_api_key"},
+    json={"whale_threshold_usd": 10000},
+)
+data = response.json()
+```
+</CodeGroup>
+
+## Response
+
+```json
+{
+  "success": true,
+  "event_id": 65,
+  "whale_threshold_usd": 10000,
+  "notify_on_whale_trade": true
+}
+```
+
+## Errors
+
+| Status | Reason |
+| ------ | ------ |
+| `401` | Missing or invalid API key. |
+| `403` | Your plan does not include whale tracking, or your subscription is inactive. |
+| `404` | You are not tracking this event. |

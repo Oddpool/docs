@@ -38,6 +38,9 @@
             "pages": [
               "whales/overview",
               "whales/list-events",
+              "whales/add-event",
+              "whales/update-event",
+              "whales/remove-event",
               "whales/get-feed",
               "whales/get-stats",
               "whales/event-trades",
