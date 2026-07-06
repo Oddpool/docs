@@ -19,13 +19,13 @@ The object returned by [Get Oddpool ID by ticker](/institutions/reference-data/e
   Free-text category, sourced from Kalshi (e.g. `Sports`). Not a closed enum; may be `null` for uncategorized events.
 </ResponseField>
 <ResponseField name="classified_at" type="string | null">
-  ISO 8601 timestamp of the last time the event's canonical state was refreshed. Advances on new outcomes, settlement reclassification, and divergence re-validation — not on price or volume. Use it as the high-water mark for incremental sync via `classified_since`.
+  ISO 8601 timestamp of the last time the event's canonical state was refreshed. Advances on new outcomes, settlement reclassification, and divergence re-validation, not on price or volume. Use it as the high-water mark for incremental sync via `classified_since`.
 </ResponseField>
 <ResponseField name="venue_listings" type="EventVenueListing[]">
-  The event as each venue lists it — one entry per venue. See [Event venue listing](#event-venue-listing).
+  The event as each venue lists it, one entry per venue. See [Event venue listing](#event-venue-listing).
 </ResponseField>
 <ResponseField name="venue_pairs" type="EventVenuePair[]">
-  Per-venue-pair settlement classification — one entry per pair of venues that both list the event. See [Event venue pair](#event-venue-pair).
+  Per-venue-pair settlement classification, one entry per pair of venues that both list the event. See [Event venue pair](#event-venue-pair).
 </ResponseField>
 <ResponseField name="outcomes" type="Outcome[]">
   Each named answer on the event. See [Outcome](#outcome).
@@ -33,7 +33,7 @@ The object returned by [Get Oddpool ID by ticker](/institutions/reference-data/e
 
 ## Event venue listing
 
-An entry in the event's `venue_listings` — names the parent event on one venue.
+An entry in the event's `venue_listings`. Names the parent event on one venue.
 
 <ResponseField name="oddpool_id" type="string">Listing id (`OPL:…`).</ResponseField>
 <ResponseField name="venue" type="string">`kalshi`, `polymarket`, or `polymarket_us`.</ResponseField>
@@ -49,7 +49,7 @@ An entry in the event's `venue_pairs`. Fungibility is a property of a venue pair
 <ResponseField name="venue_b" type="string">Second venue in the pair.</ResponseField>
 <ResponseField name="venue_b_event_id" type="string">Venue B's event id.</ResponseField>
 <ResponseField name="basis_class" type="string | null">
-  The settlement-rule axis — whether the two venues agree on when, by what authority, and under what timing window the event resolves.
+  The settlement-rule axis: whether the two venues agree on when, by what authority, and under what timing window the event resolves.
 
   | Value | Meaning |
   |-------|---------|
@@ -58,7 +58,7 @@ An entry in the event's `venue_pairs`. Fungibility is a property of a venue pair
   | `settlement_source` | Both venues settle on the same nominal value but read it from two different named authorities (e.g. National Weather Service vs. Weather Underground). |
 </ResponseField>
 <ResponseField name="outcome_universe" type="string | null">
-  The outcome-list correspondence axis — how much the two venues' outcome sets line up.
+  The outcome-list correspondence axis: how much the two venues' outcome sets line up.
 
   | Value | Meaning |
   |-------|---------|
@@ -72,7 +72,7 @@ An entry in the event's `venue_pairs`. Fungibility is a property of a venue pair
 An entry in the event's `outcomes`.
 
 <ResponseField name="oddpool_id" type="string">Outcome id (`OPO:…`).</ResponseField>
-<ResponseField name="label" type="string">Display label — an entity name, bucket descriptor, `Yes`, etc.</ResponseField>
+<ResponseField name="label" type="string">Display label: an entity name, bucket descriptor, `Yes`, etc.</ResponseField>
 <ResponseField name="outcome_kind" type="string">
   The structural type of the outcome.
 
@@ -88,56 +88,56 @@ An entry in the event's `outcomes`.
   | `will_happen_by_date` | Time-bound binary with a deadline. |
 </ResponseField>
 <ResponseField name="outcome_params" type="object">
-  Type-specific structured parameters. Numeric kinds carry `outcome_params.bucket`; `will_happen_by_date` carries `outcome_params.deadline`; `binary` and `multi_class_named` are `{}`. See [outcome_params shapes](#outcome-params-shapes). Additional non-load-bearing keys may appear alongside `bucket` / `deadline` (`unmatched_in_counterparty`, `residual`, audit keys) — rely on `bucket` / `deadline` and ignore unknown siblings.
+  Type-specific structured parameters. Numeric kinds carry `outcome_params.bucket`; `will_happen_by_date` carries `outcome_params.deadline`; `binary` and `multi_class_named` are `{}`. See [outcome_params shapes](#outcome-params-shapes). Additional non-load-bearing keys may appear alongside `bucket` / `deadline` (`unmatched_in_counterparty`, `residual`, audit keys). Rely on `bucket` / `deadline` and ignore unknown siblings.
 </ResponseField>
 <ResponseField name="entity" type="CanonicalEntity | null">
   The canonical entity this outcome refers to, or `null` for non-entity outcomes such as `Tie` or `Other`. See [Entity](#entity).
 </ResponseField>
 <ResponseField name="venue_listings" type="OutcomeVenueListing[]">
-  The tradeable side of this outcome on each venue — the ids you subscribe to. See [Outcome venue listing](#outcome-venue-listing).
+  The tradeable side of this outcome on each venue, the ids you subscribe to. See [Outcome venue listing](#outcome-venue-listing).
 </ResponseField>
 <ResponseField name="venue_pairs" type="OutcomeVenuePair[]">
-  Per-venue-pair fungibility for this outcome — one entry per pair of venues that both list it. See [Outcome venue pair](#outcome-venue-pair).
+  Per-venue-pair fungibility for this outcome, one entry per pair of venues that both list it. See [Outcome venue pair](#outcome-venue-pair).
 </ResponseField>
 
 ### outcome_params shapes
 
 ```jsonc
-// range_bin — half-open numeric interval
+// range_bin: half-open numeric interval
 "outcome_params": { "bucket": { "shape": "discrete_range",
   "lo": 0.0, "hi": 50000.0, "lo_inclusive": true, "hi_inclusive": false, "units": "count" } }
 
-// threshold_above — cumulative ladder, open upper bound
+// threshold_above: cumulative ladder, open upper bound
 "outcome_params": { "bucket": { "shape": "cumulative_threshold",
   "lo": 25.0, "hi": null, "lo_inclusive": false, "hi_inclusive": null, "units": "bps" } }
 
-// threshold_below — cumulative ladder, open lower bound
+// threshold_below: cumulative ladder, open lower bound
 "outcome_params": { "bucket": { "shape": "cumulative_below",
   "lo": null, "hi": 0.0, "lo_inclusive": null, "hi_inclusive": false, "units": "count" } }
 
-// point_mass — exact value
+// point_mass: exact value
 "outcome_params": { "bucket": { "shape": "point_value",
   "lo": -25, "hi": -25, "lo_inclusive": true, "hi_inclusive": true, "units": "bps" } }
 
-// spread — handicap on a line; line and side are spread-only
+// spread: handicap on a line; line and side are spread-only
 "outcome_params": { "bucket": { "shape": "spread", "line": 1.5, "side": "favorite",
   "lo": 1.5, "hi": null, "lo_inclusive": false, "hi_inclusive": null, "units": "pts" } }
 
 // will_happen_by_date
 "outcome_params": { "deadline": { "iso8601": "2027-01-01", "inclusive": false } }
 
-// binary, multi_class_named — no structural params
+// binary, multi_class_named: no structural params
 "outcome_params": { }
 ```
 
 ## Outcome venue listing
 
-An entry in an outcome's `venue_listings` — one venue's tradeable side of the outcome.
+An entry in an outcome's `venue_listings`, one venue's tradeable side of the outcome.
 
 <ResponseField name="oddpool_id" type="string">Listing id (`OPL:…`).</ResponseField>
 <ResponseField name="venue" type="string">`kalshi`, `polymarket`, or `polymarket_us`.</ResponseField>
 <ResponseField name="venue_market_id" type="string">
-  The venue's native identifier for this tradeable side — what you trade on.
+  The venue's native identifier for this tradeable side, the value you trade on.
 
   - Kalshi: the market ticker.
   - Polymarket binary YES/NO: the `conditionId`.
@@ -150,24 +150,24 @@ An entry in an outcome's `venue_listings` — one venue's tradeable side of the 
 
 ## Outcome venue pair
 
-An entry in an outcome's `venue_pairs` — whether the outcome's two venue sides are one tradeable instrument.
+An entry in an outcome's `venue_pairs`, showing whether the outcome's two venue sides are one tradeable instrument.
 
 <ResponseField name="venue_a" type="string">First venue in the pair.</ResponseField>
 <ResponseField name="venue_b" type="string">Second venue in the pair.</ResponseField>
 <ResponseField name="fungible" type="boolean">
-  `true` iff the event leg's `basis_class == identical` and `divergence_axes == []`. When true, the two listings are one tradeable instrument — same payoff, same nominal value, same authority, same timing — and can be treated as one for quoting, hedging, and risk. The one-glance answer.
+  `true` iff the event leg's `basis_class == identical` and `divergence_axes == []`. When true, the two listings are one tradeable instrument (same payoff, same nominal value, same authority, same timing) and can be treated as one for quoting, hedging, and risk. The one-glance answer.
 </ResponseField>
 <ResponseField name="divergence_axes" type="string[]">
-  Subset of `{timing, source, condition_scope}` — how the two listings settle differently when they are the same nominal outcome. Empty means no axis-level divergence on this leg.
+  Subset of `{timing, source, condition_scope}`: how the two listings settle differently when they are the same nominal outcome. Empty means no axis-level divergence on this leg.
 
   | Axis | Meaning |
   |------|---------|
-  | `timing` | Same outcome, fixed at different moments — one on the event itself, the other on a later administrative step (certification, swearing-in). The eventual answer matches, but early-resolution and payout timing can differ. |
+  | `timing` | Same outcome, fixed at different moments: one on the event itself, the other on a later administrative step (certification, swearing-in). The eventual answer matches, but early-resolution and payout timing can differ. |
   | `source` | Same value, read from two different named authorities (e.g. National Weather Service vs. Weather Underground). Agree in the modal case, can diverge on edge measurements. |
   | `condition_scope` | The most common axis, and usually just the venues' standard cancellation/postponement policy. Still the same outcome: it settles identically in the normal case and differs only on rare edge cases (game cancelled or postponed past a window, a tie), where one venue pays the last-traded price and the other resolves No or 50-50. Common on sports and entertainment. |
 </ResponseField>
 
-For how `condition_scope` affects the `fungible` filter — and when to treat it as tradeable with `allow` — see [Fungibility and cancellation risk](/institutions/reference-data/events/list#fungibility-and-cancellation-risk).
+For how `condition_scope` affects the `fungible` filter, and when to treat it as tradeable with `allow`, see [Fungibility and cancellation risk](/institutions/reference-data/events/list#fungibility-and-cancellation-risk).
 <ResponseField name="divergence_reason" type="string | null">
   One-sentence explanation of the specific case, populated when `divergence_axes` is non-empty.
 </ResponseField>
@@ -183,10 +183,10 @@ The object returned by the [entity endpoints](/institutions/reference-data/entit
 <ResponseField name="canonical_name" type="string">The canonical display name.</ResponseField>
 <ResponseField name="aliases" type="string[]">Alternate names observed on venues and curated alternates.</ResponseField>
 <ResponseField name="wikidata_qid" type="string | null">
-  Wikidata Q-ID — a stable cross-reference to FEC, bioguide, LEI, sports-reference, MusicBrainz, and other identifier systems. `null` for auto-minted entities.
+  Wikidata Q-ID, a stable cross-reference to FEC, bioguide, LEI, sports-reference, MusicBrainz, and other identifier systems. `null` for auto-minted entities.
 </ResponseField>
 <ResponseField name="metadata" type="object">
-  Kind-specific structured fields. Shape varies by `kind` — e.g. Person: `country`, `party_qid`, `person_kind`; Team: `league`, `sport`, `city`, `parent_qid`; Organization: `country`, `tickers`. Values that reference other entities are Wikidata Q-IDs (`country: "Q30"`). Treat as open JSON: use the keys you recognize, ignore the rest.
+  Kind-specific structured fields. Shape varies by `kind`. For example, Person: `country`, `party_qid`, `person_kind`; Team: `league`, `sport`, `city`, `parent_qid`; Organization: `country`, `tickers`. Values that reference other entities are Wikidata Q-IDs (`country: "Q30"`). Treat as open JSON: use the keys you recognize, ignore the rest.
 </ResponseField>
 <ResponseField name="provenance" type="string">
   `wikidata` when the record is sourced from Wikidata; `llm_auto` when auto-minted from venue text because no Wikidata match was available.

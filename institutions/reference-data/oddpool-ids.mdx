@@ -1,13 +1,13 @@
 ---
 title: "Oddpool IDs"
-description: "The four identifier families — OPI, OPO, OPL, OPE — and how they nest."
+description: "The four identifier families (OPI, OPO, OPL, OPE) and how they nest."
 ---
 
 Every layer of a response carries its own Oddpool ID. The four families name the four layers:
 
 | Family | Layer   | What it identifies                                  | Format                                        | Example                             |
 |--------|---------|-----------------------------------------------------|-----------------------------------------------|-------------------------------------|
-| `OPI`  | Event   | One real-world resolution — a game, election, Fed decision | `OPI-{8-char base32}`                   | `OPI-OO4GBEZJ`                      |
+| `OPI`  | Event   | One real-world resolution: a game, election, or Fed decision | `OPI-{8-char base32}`                   | `OPI-OO4GBEZJ`                      |
 | `OPO`  | Outcome | One named answer on an event                        | `OPO:{opi-suffix}:{label-slug}-{4-char hash}` | `OPO:OO4GBEZJ:GREMIO-FBPA-JITQ`     |
 | `OPL`  | Listing | One venue's tradeable side of an outcome            | `OPL:{VENUE}:{slug(venue_market_id)}`         | `OPL:KALSHI:KXPRESPARTY-28-TRUMP`   |
 | `OPE`  | Entity  | A team, person, party, or other real-world entity   | `OPE:{KIND}:{slug}`                            | `OPE:PERSON:DONALD-TRUMP`           |
@@ -23,7 +23,7 @@ An event lookup returns the whole tree in one payload:
 
 ## Stability
 
-Oddpool IDs are deterministic and stable for the lifetime of the underlying row. Once you resolve a venue ticker to an ID, the mapping doesn't move — all four families are safe to cache indefinitely.
+Oddpool IDs are deterministic and stable for the lifetime of the underlying row. Once you resolve a venue ticker to an ID, the mapping doesn't move. All four families are safe to cache indefinitely.
 
 Treat IDs as opaque strings. The formats above are documented so they're recognizable in logs; resolve and store them rather than constructing or parsing them yourself.
 

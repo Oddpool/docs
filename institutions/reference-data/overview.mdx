@@ -5,9 +5,9 @@ description: "Match the same event across venues to one ID, with the venue ticke
 
 Kalshi, Polymarket, and other venues each give the same event a different ticker, ID, and question text. The Reference Data API matches them and gives you:
 
-- **one ID per event** — the same game, election, or Fed decision across every venue that lists it
-- **one ID per outcome** — each named answer on that event
-- **one ID per entity** — the team, person, or party an outcome refers to, with a Wikidata Q-ID
+- **one ID per event**: the same game, election, or Fed decision across every venue that lists it
+- **one ID per outcome**: each named answer on that event
+- **one ID per entity**: the team, person, or party an outcome refers to, with a Wikidata Q-ID
 - **the venue tickers** you need to subscribe to live prices on each side
 
 For each matched event, it also tells you where the two venues agree and where they settle differently, so you can size a cross-venue position knowing exactly how fungible the two sides are. That classification is documented on [List matched events](/institutions/reference-data/events/list) and returned on every event.
@@ -84,6 +84,6 @@ Every event response nests four layers, each with its own Oddpool ID:
     What OPI, OPO, OPL, and OPE identify, how they nest, and why they're safe to cache.
   </Card>
   <Card title="Response fields" icon="list" href="/institutions/reference-data/response-fields">
-    Every field in the event and entity responses, defined — including basis_class, outcome kinds, and divergence.
+    Definitions for every field in the event and entity responses, including basis_class, outcome kinds, and divergence.
   </Card>
 </CardGroup>
