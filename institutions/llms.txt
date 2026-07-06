@@ -1,0 +1,26 @@
+# Oddpool Institutions
+
+> Institutional reference data for prediction markets. One canonical ID per cross-venue event, outcome, and real-world entity across Kalshi, Polymarket, and Polymarket US, with the venue-side identifiers to trade each side, per-venue-pair fungibility classification, and a Wikidata cross-walk to external identifier systems.
+
+Base URL: https://api.oddpool.com
+Docs: https://docs.oddpool.com/institutions/reference-data/overview
+Auth: X-API-Key header (`oddpool_<key>`)
+
+## Reference Data API
+
+### Concepts
+- [Reference Data API](https://docs.oddpool.com/institutions/reference-data/overview.md): What the API does, base URL, authentication, quickstart, and the four-layer response shape (event, outcome, venue listing, entity).
+- [Supported venues](https://docs.oddpool.com/institutions/reference-data/venues.md): The venue tags (`kalshi`, `polymarket`, `polymarket_us`) accepted by `venue` and `venue_pair`, how they combine into pairs, and each venue's `venue_market_id` format and CLOB-token model.
+- [Oddpool IDs](https://docs.oddpool.com/institutions/reference-data/oddpool-ids.md): The four identifier families (OPI event, OPO outcome, OPL venue listing, OPE entity), how they nest, and why they are cache-safe.
+- [Response fields](https://docs.oddpool.com/institutions/reference-data/response-fields.md): The full field dictionary for the event and entity responses, including basis_class, outcome_universe, outcome_kind, divergence_axes, and outcome_params.
+- [Using Wikidata IDs](https://docs.oddpool.com/institutions/reference-data/using-wikidata-ids.md): Worked examples that use each entity's wikidata_qid to join to campaign finance, stock tickers, LEIs, and other external identifier systems.
+
+### Matched events
+- [Get Oddpool ID by ticker](https://docs.oddpool.com/institutions/reference-data/events/lookup.md): GET /reference/events/lookup. Resolve a Kalshi or Polymarket id to the matched event, with every outcome, linked entity, and venue side.
+- [List matched events](https://docs.oddpool.com/institutions/reference-data/events/list.md): GET /reference/events. Page live or historical matched events, filtered by venue pair and fungibility (`fungible`, `allow`, `basis_class`, `outcome_universe`), subject domain, and `classified_since` for incremental sync.
+- [Get a matched event](https://docs.oddpool.com/institutions/reference-data/events/get.md): GET /reference/events/{opi}. Fetch one matched event by its Oddpool ID.
+
+### Entities
+- [Look up an entity](https://docs.oddpool.com/institutions/reference-data/entities/lookup.md): GET /reference/entities/lookup. Resolve a Wikidata Q-ID, Oddpool ID, or (kind, name) pair to a canonical entity.
+- [Search entities](https://docs.oddpool.com/institutions/reference-data/entities/list.md): GET /reference/entities. Search and page entities by substring, kind, Wikidata Q-ID, or provenance.
+- [Get an entity](https://docs.oddpool.com/institutions/reference-data/entities/get.md): GET /reference/entities/{ope}. Fetch one entity by its Oddpool ID.
