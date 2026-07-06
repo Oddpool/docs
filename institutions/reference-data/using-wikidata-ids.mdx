@@ -1,0 +1,142 @@
+---
+title: "Using Wikidata IDs"
+description: "Join canonical entities to campaign finance, tickers, rosters, and the rest of the open-data graph through their Wikidata Q-ID."
+---
+
+Every canonical entity carries a `wikidata_qid`. Wikidata is a free, structured database that stores hundreds of external identifiers for each entity, so the Q-ID is a ready-made join key: from one Oddpool entity you can reach a politician's campaign-finance record, a company's stock ticker and LEI, a team's league and roster, and more, without maintaining your own entity-matching layer.
+
+The pattern is always the same: read `wikidata_qid` off the entity, then query Wikidata with it.
+
+```python
+import requests
+
+# Resolve an Oddpool entity to its Wikidata Q-ID
+entity = requests.get(
+    "https://api.oddpool.com/reference/entities/lookup",
+    headers={"X-API-Key": "your_api_key"},
+    params={"kind": "person", "name": "Donald Trump"},
+).json()
+
+qid = entity["wikidata_qid"]   # "Q22686"
+```
+
+<Note>
+Wikidata asks every caller to send a descriptive `User-Agent` (an app name and contact), and it rate-limits anonymous traffic. The examples below set one. For heavy or repeated use, cache what you pull.
+</Note>
+
+## Turn a Q-ID into a name and profile
+
+The simplest call: fetch an entity's labels, description, and claims as JSON, no query language needed.
+
+```python
+import requests
+
+UA = {"User-Agent": "my-app/1.0 (you@example.com)"}
+
+def wikidata_entity(qid):
+    url = f"https://www.wikidata.org/wiki/Special:EntityData/{qid}.json"
+    return requests.get(url, headers=UA).json()["entities"][qid]
+
+e = wikidata_entity("Q22686")
+
+# Some items store their label under the "mul" (multilingual) code instead of "en".
+labels = e["labels"]
+name = (labels.get("en") or labels.get("mul"))["value"]
+description = e["descriptions"]["en"]["value"]
+
+print(name)         # Donald Trump
+print(description)  # American businessman and politician (born 1946), President of the United States ...
+```
+
+## Cross-walk an election market's candidates to campaign finance
+
+For an election market, take each candidate outcome's `entity.wikidata_qid` and resolve them, in one request, to their campaign-finance identifiers. `wdt:P2686` is the OpenSecrets people ID and `wdt:P2390` is the Ballotpedia ID; from either you can pull filings, totals, and donor data.
+
+```python
+import requests
+
+UA = {"User-Agent": "my-app/1.0 (you@example.com)"}
+
+# wikidata_qid values read off the candidate outcomes of an election event
+qids = ["Q22686", "Q10853588"]
+values = " ".join(f"wd:{q}" for q in qids)
+
+query = f"""
+SELECT ?person ?personLabel ?opensecrets ?ballotpedia WHERE {{
+  VALUES ?person {{ {values} }}
+  OPTIONAL {{ ?person wdt:P2686 ?opensecrets. }}   # OpenSecrets people ID
+  OPTIONAL {{ ?person wdt:P2390 ?ballotpedia. }}   # Ballotpedia ID
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en,mul". }}
+}}"""
+
+r = requests.get(
+    "https://query.wikidata.org/sparql",
+    params={"query": query, "format": "json"},
+    headers=UA,
+)
+for row in r.json()["results"]["bindings"]:
+    print(row["personLabel"]["value"],
+          row.get("opensecrets", {}).get("value"),
+          row.get("ballotpedia", {}).get("value"))
+
+# Donald Trump   N00023864  Donald_Trump
+# Kamala Harris  N00036915  Kamala_Harris
+```
+
+<Tip>
+To see every identifier system an entity is part of, list its external-ID properties. This is how you discover what a given entity can join to before hardcoding a property:
+
+```sparql
+SELECT ?propLabel ?value WHERE {
+  wd:Q22686 ?p ?value .
+  ?prop wikibase:directClaim ?p ; wikibase:propertyType wikibase:ExternalId .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en,mul". }
+}
+```
+
+For Q22686 this returns Ballotpedia, OpenSecrets, C-SPAN, Library of Congress, VIAF, and more.
+</Tip>
+
+## Get a company's ticker, exchange, and LEI
+
+For a market on a public company, resolve the entity to its listings and legal identifiers. `p:P414` is the stock-exchange statement, with the ticker as a `pq:P249` qualifier, and `wdt:P1278` is the Legal Entity Identifier.
+
+```python
+import requests
+
+UA = {"User-Agent": "my-app/1.0 (you@example.com)"}
+
+query = """
+SELECT ?exchangeLabel ?ticker ?lei WHERE {
+  wd:Q312 p:P414 ?s .
+  ?s ps:P414 ?exchange ; pq:P249 ?ticker .
+  OPTIONAL { wd:Q312 wdt:P1278 ?lei. }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en,mul". }
+}"""
+
+r = requests.get(
+    "https://query.wikidata.org/sparql",
+    params={"query": query, "format": "json"},
+    headers=UA,
+)
+for row in r.json()["results"]["bindings"]:
+    print(row["exchangeLabel"]["value"], row["ticker"]["value"], row.get("lei", {}).get("value"))
+
+# Nasdaq               AAPL  HWUPKR0MPOU8FGXBT394
+# Tokyo Stock Exchange 6689  HWUPKR0MPOU8FGXBT394
+```
+
+## Common cross-walks
+
+A few properties useful for prediction-market data. Use the external-ID discovery query above to find the rest.
+
+| System | Wikidata property | Unlocks |
+|--------|-------------------|---------|
+| OpenSecrets people ID | `P2686` | US federal campaign finance |
+| Ballotpedia ID | `P2390` | US politics and election profiles |
+| Stock exchange + ticker | `P414` + `P249` | Public equities |
+| Legal Entity Identifier (LEI) | `P1278` | Corporate filings and counterparty data |
+| Sports league | `P118` | A team's competition |
+| VIAF ID | `P214` | Library and authority records |
+
+Wikidata publishes the [full list of external-identifier properties](https://www.wikidata.org/wiki/Wikidata:Database_reports/List_of_properties/all) and a public [SPARQL endpoint](https://query.wikidata.org).

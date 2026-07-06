@@ -106,7 +106,8 @@
               "institutions/reference-data/overview",
               "institutions/reference-data/venues",
               "institutions/reference-data/oddpool-ids",
-              "institutions/reference-data/response-fields"
+              "institutions/reference-data/response-fields",
+              "institutions/reference-data/using-wikidata-ids"
             ]
           },
           {
