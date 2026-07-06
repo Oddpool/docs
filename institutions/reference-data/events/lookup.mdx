@@ -1,12 +1,12 @@
 ---
 title: "Get Oddpool ID by ticker"
-description: "Resolve a Kalshi or Polymarket ticker to its Oddpool event, outcomes, and venue sides."
+description: "Resolve a Kalshi, Polymarket, or Polymarket US ticker to its Oddpool event, outcomes, and venue sides."
 api: "GET https://api.oddpool.com/reference/events/lookup"
 ---
 
-Give this endpoint a Kalshi or Polymarket id and it returns the matched event: its Oddpool ID, every venue that lists it, every outcome, the entity each outcome refers to, and the venue ticker you trade on each side.
+Give this endpoint a Kalshi, Polymarket, or Polymarket US id and it returns the matched event: its Oddpool ID, every venue that lists it, every outcome, the entity each outcome refers to, and the venue ticker you trade on each side.
 
-Kalshi input can be an event ticker or a market ticker (a market ticker resolves to its parent event). Polymarket input can be a conditionId, event slug, or numeric event id.
+Kalshi input can be an event ticker or a market ticker (a market ticker resolves to its parent event). Polymarket input can be a conditionId, event slug, or numeric event id. Polymarket US input is the market slug.
 
 ## Query parameters
 
@@ -16,7 +16,7 @@ Pass either `oddpool_id`, or `venue` + `id`.
   `kalshi`, `polymarket`, or `polymarket_us` (see [Supported venues](/institutions/reference-data/venues)). Required when you pass `id`.
 </ParamField>
 <ParamField query="id" type="string">
-  The venue's id. Kalshi: event or market ticker. Polymarket: conditionId (`0x…`), event slug, or numeric event id.
+  The venue's id. Kalshi: event or market ticker. Polymarket: conditionId (`0x…`), event slug, or numeric event id. Polymarket US: market slug.
 </ParamField>
 <ParamField query="oddpool_id" type="string">
   An Oddpool event id (`OPI-XXXXXXXX`) instead of a venue id.

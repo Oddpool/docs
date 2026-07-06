@@ -5,6 +5,7 @@
 Base URL: https://api.oddpool.com
 WebSocket: wss://feeds.oddpool.com/ws
 Docs: https://docs.oddpool.com
+Institutions (reference data API): https://docs.oddpool.com/institutions/llms.txt
 
 ## Documentation index
 

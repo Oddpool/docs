@@ -31,7 +31,7 @@ A `401` means the key is missing or unknown; a `403` means the key is valid but 
 
 <CodeGroup>
 ```bash Resolve a venue ticker
-# Kalshi or Polymarket id -> the matched event
+# a Kalshi, Polymarket, or Polymarket US id -> the matched event
 curl -H "X-API-Key: $KEY" \
   "https://api.oddpool.com/reference/events/lookup?venue=kalshi&id=KXSB-27-ARI"
 ```
@@ -54,7 +54,7 @@ curl -H "X-API-Key: $KEY" \
 
 <CardGroup cols={2}>
   <Card title="Get Oddpool ID by ticker" icon="right-left" href="/institutions/reference-data/events/lookup">
-    Turn a Kalshi or Polymarket id into the matched event, with every outcome and venue side.
+    Turn a Kalshi, Polymarket, or Polymarket US id into the matched event, with every outcome and venue side.
   </Card>
   <Card title="List matched events" icon="calendar" href="/institutions/reference-data/events/list">
     Page live or historical events, filtered by venue pair and fungibility.

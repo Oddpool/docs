@@ -5,6 +5,7 @@
 Base URL: https://api.oddpool.com
 Docs: https://docs.oddpool.com/institutions/reference-data/overview
 Auth: X-API-Key header (`oddpool_<key>`)
+Full text: https://docs.oddpool.com/institutions/llms-full.txt
 
 ## Reference Data API
 
@@ -16,7 +17,7 @@ Auth: X-API-Key header (`oddpool_<key>`)
 - [Using Wikidata IDs](https://docs.oddpool.com/institutions/reference-data/using-wikidata-ids.md): Worked examples that use each entity's wikidata_qid to join to campaign finance, stock tickers, LEIs, and other external identifier systems.
 
 ### Matched events
-- [Get Oddpool ID by ticker](https://docs.oddpool.com/institutions/reference-data/events/lookup.md): GET /reference/events/lookup. Resolve a Kalshi or Polymarket id to the matched event, with every outcome, linked entity, and venue side.
+- [Get Oddpool ID by ticker](https://docs.oddpool.com/institutions/reference-data/events/lookup.md): GET /reference/events/lookup. Resolve a Kalshi, Polymarket, or Polymarket US id to the matched event, with every outcome, linked entity, and venue side.
 - [List matched events](https://docs.oddpool.com/institutions/reference-data/events/list.md): GET /reference/events. Page live or historical matched events, filtered by venue pair and fungibility (`fungible`, `allow`, `basis_class`, `outcome_universe`), subject domain, and `classified_since` for incremental sync.
 - [Get a matched event](https://docs.oddpool.com/institutions/reference-data/events/get.md): GET /reference/events/{opi}. Fetch one matched event by its Oddpool ID.
 
