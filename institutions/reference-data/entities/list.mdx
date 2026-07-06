@@ -4,7 +4,7 @@ description: "Find entities by substring and kind."
 api: "GET https://api.oddpool.com/reference/entities"
 ---
 
-Search and page entities. `q` is a case-insensitive substring match on the canonical name. Each item is the same shape as [Resolve an entity](/institutions/reference-data/entities/lookup#response).
+Search and page entities. `q` is a case-insensitive substring match on the canonical name. Each item is a full **entity**, the same object as [Look up an entity](/institutions/reference-data/entities/lookup).
 
 ## Query parameters
 
@@ -48,8 +48,8 @@ page = r.json()
 
 ## Response
 
-<ResponseField name="items" type="object[]">
-  A page of entities, each the shape from [Resolve an entity](/institutions/reference-data/entities/lookup#response).
+<ResponseField name="items" type="Entity[]">
+  A page of entities. Each is the full **entity** object — every field is defined in [Response fields](/institutions/reference-data/response-fields#entity).
 </ResponseField>
 <ResponseField name="next_cursor" type="string | null">
   Pass as `cursor` for the next page. `null` on the last page.

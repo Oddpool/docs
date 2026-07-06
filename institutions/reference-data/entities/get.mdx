@@ -4,7 +4,7 @@ description: "Fetch an entity by its Oddpool ID."
 api: "GET https://api.oddpool.com/reference/entities/{ope}"
 ---
 
-Fetch one entity by its Oddpool id. Same response as [Resolve an entity](/institutions/reference-data/entities/lookup#response).
+Fetch one entity by its Oddpool id. Returns the same **entity** object as [Look up an entity](/institutions/reference-data/entities/lookup).
 
 ## Path parameters
 
@@ -29,6 +29,23 @@ r = requests.get(
 entity = r.json()
 ```
 </CodeGroup>
+
+## Response
+
+A canonical **entity**. Every field is defined in [Response fields](/institutions/reference-data/response-fields#entity).
+
+```json
+{
+  "oddpool_id": "OPE:TEAM:LOS-ANGELES-LAKERS",
+  "kind": "team",
+  "canonical_name": "Los Angeles Lakers",
+  "aliases": ["Lakers", "LA Lakers", "LAL"],
+  "wikidata_qid": "Q121783",
+  "metadata": { "league": "NBA", "sport": "basketball", "city": "Los Angeles" },
+  "provenance": "wikidata",
+  "source_synced_at": "2026-05-27T01:16:04Z"
+}
+```
 
 ## Errors
 

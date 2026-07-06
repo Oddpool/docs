@@ -53,13 +53,13 @@ curl -H "X-API-Key: $KEY" \
 ## Endpoints
 
 <CardGroup cols={2}>
-  <Card title="Resolve a venue ticker" icon="right-left" href="/institutions/reference-data/events/lookup">
+  <Card title="Get oddpool ID by ticker" icon="right-left" href="/institutions/reference-data/events/lookup">
     Turn a Kalshi or Polymarket id into the matched event, with every outcome and venue side.
   </Card>
   <Card title="List matched events" icon="calendar" href="/institutions/reference-data/events/list">
     Page live or historical events, filtered by venue pair and fungibility.
   </Card>
-  <Card title="Resolve an entity" icon="user" href="/institutions/reference-data/entities/lookup">
+  <Card title="Look up an entity" icon="user" href="/institutions/reference-data/entities/lookup">
     Look up a team, person, or party by Wikidata Q-ID, Oddpool ID, or name.
   </Card>
   <Card title="Search entities" icon="magnifying-glass" href="/institutions/reference-data/entities/list">
@@ -69,13 +69,18 @@ curl -H "X-API-Key: $KEY" \
 
 ## How a response is shaped
 
-Every event response nests four layers. You'll see them in the [event endpoints](/institutions/reference-data/events/lookup):
+Every event response nests four layers, each with its own Oddpool ID:
 
-```text
-event      one real-world resolution — a game, an election, a Fed decision   (OPI-XXXXXXXX)
- └─ outcome    one named answer on that event — a team, "Yes", a price bucket   (OPO:…)
-     └─ venue listing   one venue's tradeable side of that outcome — the ticker you trade   (OPL:…)
- └─ entity     the team / person / party an outcome refers to                   (OPE:…)
-```
+- **Event** (`OPI`): one real-world resolution, like a game, election, or Fed decision
+  - **Outcome** (`OPO`): one named answer on the event, like a team, "Yes", or a price bucket
+    - **Venue listing** (`OPL`): one venue's tradeable side of that outcome, the ticker you trade
+    - **Entity** (`OPE`): the team, person, or party the outcome refers to
 
-Every layer has its own Oddpool ID. IDs are stable for the life of the row, so once you resolve a venue ticker you can cache the mapping. Treat the IDs as opaque strings — resolve and store them rather than parsing them.
+<CardGroup cols={2}>
+  <Card title="Oddpool IDs" icon="fingerprint" href="/institutions/reference-data/oddpool-ids">
+    What OPI, OPO, OPL, and OPE identify, how they nest, and why they're safe to cache.
+  </Card>
+  <Card title="Response fields" icon="list" href="/institutions/reference-data/response-fields">
+    Every field in the event and entity responses, defined — including basis_class, outcome kinds, and divergence.
+  </Card>
+</CardGroup>

@@ -1,0 +1,32 @@
+---
+title: "Oddpool IDs"
+description: "The four identifier families — OPI, OPO, OPL, OPE — and how they nest."
+---
+
+Every layer of a response carries its own Oddpool ID. The four families name the four layers:
+
+| Family | Layer   | What it identifies                                  | Format                                        | Example                             |
+|--------|---------|-----------------------------------------------------|-----------------------------------------------|-------------------------------------|
+| `OPI`  | Event   | One real-world resolution — a game, election, Fed decision | `OPI-{8-char base32}`                   | `OPI-OO4GBEZJ`                      |
+| `OPO`  | Outcome | One named answer on an event                        | `OPO:{opi-suffix}:{label-slug}-{4-char hash}` | `OPO:OO4GBEZJ:GREMIO-FBPA-JITQ`     |
+| `OPL`  | Listing | One venue's tradeable side of an outcome            | `OPL:{VENUE}:{slug(venue_market_id)}`         | `OPL:KALSHI:KXPRESPARTY-28-TRUMP`   |
+| `OPE`  | Entity  | A team, person, party, or other real-world entity   | `OPE:{KIND}:{slug}`                            | `OPE:PERSON:DONALD-TRUMP`           |
+
+## How they nest
+
+An event lookup returns the whole tree in one payload:
+
+- **Event** (`OPI`): one real-world resolution, like a game, election, or Fed decision
+  - **Outcome** (`OPO`): one named answer on the event
+    - **Venue listing** (`OPL`): one venue's tradeable side of that outcome, the ticker you trade
+    - **Entity** (`OPE`): the team, person, or party the outcome refers to
+
+## Stability
+
+Oddpool IDs are deterministic and stable for the lifetime of the underlying row. Once you resolve a venue ticker to an ID, the mapping doesn't move — all four families are safe to cache indefinitely.
+
+Treat IDs as opaque strings. The formats above are documented so they're recognizable in logs; resolve and store them rather than constructing or parsing them yourself.
+
+## URL encoding
+
+`OPE` and `OPO` ids contain colons. Colons are URL-safe per RFC 3986, so they work directly in a path (`/reference/entities/OPE:TEAM:LOS-ANGELES-LAKERS`). Clients that URL-encode them may use `OPE%3ATEAM%3ALOS-ANGELES-LAKERS` equivalently.

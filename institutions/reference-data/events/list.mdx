@@ -4,7 +4,7 @@ description: "Page live or historical matched events, filtered by venue pair and
 api: "GET https://api.oddpool.com/reference/events"
 ---
 
-Page through matched events. Each item is a full event, the same shape as [Resolve a venue ticker](/institutions/reference-data/events/lookup#response).
+Page through matched events. Each item is a full **event**, the same object as [Get oddpool ID by ticker](/institutions/reference-data/events/lookup).
 
 <Tip>
 Pass `active=true` for events with markets still trading today. Without it you get the full corpus, which is mostly long-settled events.
@@ -41,7 +41,7 @@ Pass `active=true` for events with markets still trading today. Without it you g
 </ParamField>
 
 <Info>
-`basis_class`, `outcome_universe`, and `fungible` describe how two venues settle relative to each other. Their meanings are documented on the [event response](/institutions/reference-data/events/lookup#response).
+`basis_class`, `outcome_universe`, and `fungible` are defined in [Response fields](/institutions/reference-data/response-fields#event-venue-pair).
 </Info>
 
 ## Request
@@ -65,8 +65,8 @@ page = r.json()
 
 ## Response
 
-<ResponseField name="items" type="object[]">
-  A page of events, each the full shape from [Resolve a venue ticker](/institutions/reference-data/events/lookup#response).
+<ResponseField name="items" type="Event[]">
+  A page of events. Each is the full **event** object — every field is defined in [Response fields](/institutions/reference-data/response-fields#event).
 </ResponseField>
 <ResponseField name="next_cursor" type="string | null">
   Pass as `cursor` to get the next page. `null` on the last page.
@@ -75,7 +75,85 @@ page = r.json()
 ```json
 {
   "items": [
-    { "oddpool_id": "OPI-OO4GBEZJ", "title": "Gremio vs Corinthians", "...": "full event" }
+    {
+      "oddpool_id": "OPI-OO4GBEZJ",
+      "title": "Gremio vs Corinthians",
+      "subject_domain": "Sports",
+      "classified_at": "2026-05-25T18:42:11Z",
+      "venue_listings": [
+        {
+          "oddpool_id": "OPL:KALSHI:KXBRASILEIROGAME-26MAY30GPACOR",
+          "venue": "kalshi",
+          "venue_event_id": "KXBRASILEIROGAME-26MAY30GPACOR",
+          "venue_question": "Who will win the Brasileirão match Grêmio vs Corinthians on May 30?"
+        },
+        {
+          "oddpool_id": "OPL:POLYMARKET:445404",
+          "venue": "polymarket",
+          "venue_event_id": "445404",
+          "venue_question": "Grêmio vs Corinthians: Match Result"
+        }
+      ],
+      "venue_pairs": [
+        {
+          "venue_a": "kalshi",
+          "venue_a_event_id": "KXBRASILEIROGAME-26MAY30GPACOR",
+          "venue_b": "polymarket",
+          "venue_b_event_id": "445404",
+          "basis_class": "identical",
+          "outcome_universe": "identical"
+        }
+      ],
+      "outcomes": [
+        {
+          "oddpool_id": "OPO:OO4GBEZJ:GREMIO-FBPA-JITQ",
+          "label": "Grêmio FBPA",
+          "outcome_kind": "multi_class_named",
+          "outcome_params": {},
+          "entity": {
+            "oddpool_id": "OPE:TEAM:GREMIO-FBPA",
+            "kind": "team",
+            "canonical_name": "Grêmio FBPA",
+            "aliases": ["Grêmio", "Gremio", "Tricolor Gaúcho"],
+            "wikidata_qid": "Q190301",
+            "metadata": {
+              "league": "Campeonato Brasileiro Série A",
+              "sport": "association football",
+              "city": "Porto Alegre"
+            }
+          },
+          "venue_listings": [
+            {
+              "oddpool_id": "OPL:KALSHI:KXBRASILEIROGAME-26MAY30GPACOR-GPA",
+              "venue": "kalshi",
+              "venue_market_id": "KXBRASILEIROGAME-26MAY30GPACOR-GPA",
+              "venue_event_id": "KXBRASILEIROGAME-26MAY30GPACOR",
+              "venue_yes_token": null,
+              "venue_no_token": null,
+              "venue_question": "Gremio"
+            },
+            {
+              "oddpool_id": "OPL:POLYMARKET:0X830BC4CBE4FC945B6CEE65EB1B0A5FEBACB16004C4C7B702A20376E6E12B1429",
+              "venue": "polymarket",
+              "venue_market_id": "0x830bc4cbe4fc945b6cee65eb1b0a5febacb16004c4c7b702a20376e6e12b1429",
+              "venue_event_id": "445404",
+              "venue_yes_token": "30372052209701849468461148034092137114942310389987253992056832502897412952481",
+              "venue_no_token": "74064390857285423190264600895526377480606423020566358098133374778358135580812",
+              "venue_question": "Grêmio FBPA"
+            }
+          ],
+          "venue_pairs": [
+            {
+              "venue_a": "kalshi",
+              "venue_b": "polymarket",
+              "fungible": false,
+              "divergence_axes": ["condition_scope"],
+              "divergence_reason": "Both resolve Yes if Grêmio wins in 90 minutes plus stoppage time, but Kalshi sends cancellation/reschedule over two weeks to fair price while Polymarket keeps postponed games open and canceled-without-makeup resolves No."
+            }
+          ]
+        }
+      ]
+    }
   ],
   "next_cursor": "eyJpZCI6MTI4NDQ0fQ"
 }
@@ -90,4 +168,4 @@ curl -H "X-API-Key: $KEY" "https://api.oddpool.com/reference/events?active=true&
 curl -H "X-API-Key: $KEY" "https://api.oddpool.com/reference/events?active=true&limit=100&cursor=<next_cursor>"
 ```
 
-For incremental sync, store the largest `classified_at` you've seen and pass it as `classified_since` next time. `classified_at` moves when an event is re-evaluated (new outcome, settlement reclassified), not on price or volume changes.
+For incremental sync, store the largest `classified_at` you've seen and pass it as `classified_since` next time.
