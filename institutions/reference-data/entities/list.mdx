@@ -1,7 +1,7 @@
 ---
 title: "Search entities"
 description: "Find entities by substring and kind."
-api: "GET https://api.oddpool.com/reference/entities"
+api: "GET https://api.oddpool.com/reference/v2/entities"
 ---
 
 Search and page entities. `q` is a case-insensitive substring match on the canonical name. Each item is a full **entity**, the same object as [Look up an entity](/institutions/reference-data/entities/lookup).
@@ -32,13 +32,13 @@ Search and page entities. `q` is a case-insensitive substring match on the canon
 <CodeGroup>
 ```bash cURL
 curl -H "X-API-Key: your_api_key" \
-  "https://api.oddpool.com/reference/entities?q=lakers&kind=team"
+  "https://api.oddpool.com/reference/v2/entities?q=lakers&kind=team"
 ```
 ```python Python
 import requests
 
 r = requests.get(
-    "https://api.oddpool.com/reference/entities",
+    "https://api.oddpool.com/reference/v2/entities",
     headers={"X-API-Key": "your_api_key"},
     params={"q": "lakers", "kind": "team"},
 )

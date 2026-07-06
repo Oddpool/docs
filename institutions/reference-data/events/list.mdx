@@ -1,7 +1,7 @@
 ---
 title: "List matched events"
 description: "Page live or historical matched events, filtered by venue pair and fungibility."
-api: "GET https://api.oddpool.com/reference/events"
+api: "GET https://api.oddpool.com/reference/v2/events"
 ---
 
 Page through matched events. Each item is a full **event**, the same object as [Get Oddpool ID by ticker](/institutions/reference-data/events/lookup).
@@ -64,13 +64,13 @@ Which filter you want depends on whether you hold positions through settlement:
 ```bash cURL
 # fungible on any venue pair, counting cancellation-policy-only differences as fungible
 curl -H "X-API-Key: your_api_key" \
-  "https://api.oddpool.com/reference/events?fungible=true&allow=condition_scope&active=true&limit=100"
+  "https://api.oddpool.com/reference/v2/events?fungible=true&allow=condition_scope&active=true&limit=100"
 ```
 ```python Python
 import requests
 
 r = requests.get(
-    "https://api.oddpool.com/reference/events",
+    "https://api.oddpool.com/reference/v2/events",
     headers={"X-API-Key": "your_api_key"},
     params={"fungible": "true", "allow": "condition_scope", "active": "true", "limit": 100},
 )
@@ -181,8 +181,8 @@ To narrow to one venue pair, add `venue_pair=kalshi,polymarket_us`.
 Follow `next_cursor` until it's `null`:
 
 ```bash
-curl -H "X-API-Key: $KEY" "https://api.oddpool.com/reference/events?active=true&limit=100"
-curl -H "X-API-Key: $KEY" "https://api.oddpool.com/reference/events?active=true&limit=100&cursor=<next_cursor>"
+curl -H "X-API-Key: $KEY" "https://api.oddpool.com/reference/v2/events?active=true&limit=100"
+curl -H "X-API-Key: $KEY" "https://api.oddpool.com/reference/v2/events?active=true&limit=100&cursor=<next_cursor>"
 ```
 
 For incremental sync, store the largest `classified_at` you've seen and pass it as `classified_since` next time.

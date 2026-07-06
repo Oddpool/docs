@@ -1,7 +1,7 @@
 ---
 title: "Get Oddpool ID by ticker"
 description: "Resolve a Kalshi, Polymarket, or Polymarket US ticker to its Oddpool event, outcomes, and venue sides."
-api: "GET https://api.oddpool.com/reference/events/lookup"
+api: "GET https://api.oddpool.com/reference/v2/events/lookup"
 ---
 
 Give this endpoint a Kalshi, Polymarket, or Polymarket US id and it returns the matched event: its Oddpool ID, every venue that lists it, every outcome, the entity each outcome refers to, and the venue ticker you trade on each side.
@@ -27,13 +27,13 @@ Pass either `oddpool_id`, or `venue` + `id`.
 <CodeGroup>
 ```bash cURL
 curl -H "X-API-Key: your_api_key" \
-  "https://api.oddpool.com/reference/events/lookup?venue=kalshi&id=KXBRASILEIROGAME-26MAY30GPACOR-GPA"
+  "https://api.oddpool.com/reference/v2/events/lookup?venue=kalshi&id=KXBRASILEIROGAME-26MAY30GPACOR-GPA"
 ```
 ```python Python
 import requests
 
 r = requests.get(
-    "https://api.oddpool.com/reference/events/lookup",
+    "https://api.oddpool.com/reference/v2/events/lookup",
     headers={"X-API-Key": "your_api_key"},
     params={"venue": "kalshi", "id": "KXBRASILEIROGAME-26MAY30GPACOR-GPA"},
 )

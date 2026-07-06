@@ -17,11 +17,11 @@ Full text: https://docs.oddpool.com/institutions/llms-full.txt
 - [Using Wikidata IDs](https://docs.oddpool.com/institutions/reference-data/using-wikidata-ids.md): Worked examples that use each entity's wikidata_qid to join to campaign finance, stock tickers, LEIs, and other external identifier systems.
 
 ### Matched events
-- [Get Oddpool ID by ticker](https://docs.oddpool.com/institutions/reference-data/events/lookup.md): GET /reference/events/lookup. Resolve a Kalshi, Polymarket, or Polymarket US id to the matched event, with every outcome, linked entity, and venue side.
-- [List matched events](https://docs.oddpool.com/institutions/reference-data/events/list.md): GET /reference/events. Page live or historical matched events, filtered by venue pair and fungibility (`fungible`, `allow`, `basis_class`, `outcome_universe`), subject domain, and `classified_since` for incremental sync.
-- [Get a matched event](https://docs.oddpool.com/institutions/reference-data/events/get.md): GET /reference/events/{opi}. Fetch one matched event by its Oddpool ID.
+- [Get Oddpool ID by ticker](https://docs.oddpool.com/institutions/reference-data/events/lookup.md): GET /reference/v2/events/lookup. Resolve a Kalshi, Polymarket, or Polymarket US id to the matched event, with every outcome, linked entity, and venue side.
+- [List matched events](https://docs.oddpool.com/institutions/reference-data/events/list.md): GET /reference/v2/events. Page live or historical matched events, filtered by venue pair and fungibility (`fungible`, `allow`, `basis_class`, `outcome_universe`), subject domain, and `classified_since` for incremental sync.
+- [Get a matched event](https://docs.oddpool.com/institutions/reference-data/events/get.md): GET /reference/v2/events/{opi}. Fetch one matched event by its Oddpool ID.
 
 ### Entities
-- [Look up an entity](https://docs.oddpool.com/institutions/reference-data/entities/lookup.md): GET /reference/entities/lookup. Resolve a Wikidata Q-ID, Oddpool ID, or (kind, name) pair to a canonical entity.
-- [Search entities](https://docs.oddpool.com/institutions/reference-data/entities/list.md): GET /reference/entities. Search and page entities by substring, kind, Wikidata Q-ID, or provenance.
-- [Get an entity](https://docs.oddpool.com/institutions/reference-data/entities/get.md): GET /reference/entities/{ope}. Fetch one entity by its Oddpool ID.
+- [Look up an entity](https://docs.oddpool.com/institutions/reference-data/entities/lookup.md): GET /reference/v2/entities/lookup. Resolve a Wikidata Q-ID, Oddpool ID, or (kind, name) pair to a canonical entity.
+- [Search entities](https://docs.oddpool.com/institutions/reference-data/entities/list.md): GET /reference/v2/entities. Search and page entities by substring, kind, Wikidata Q-ID, or provenance.
+- [Get an entity](https://docs.oddpool.com/institutions/reference-data/entities/get.md): GET /reference/v2/entities/{ope}. Fetch one entity by its Oddpool ID.

@@ -12,7 +12,7 @@ import requests
 
 # Resolve an Oddpool entity to its Wikidata Q-ID
 entity = requests.get(
-    "https://api.oddpool.com/reference/entities/lookup",
+    "https://api.oddpool.com/reference/v2/entities/lookup",
     headers={"X-API-Key": "your_api_key"},
     params={"kind": "person", "name": "Donald Trump"},
 ).json()

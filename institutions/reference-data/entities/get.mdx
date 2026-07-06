@@ -1,7 +1,7 @@
 ---
 title: "Get an entity"
 description: "Fetch an entity by its Oddpool ID."
-api: "GET https://api.oddpool.com/reference/entities/{ope}"
+api: "GET https://api.oddpool.com/reference/v2/entities/{ope}"
 ---
 
 Fetch one entity by its Oddpool ID. Returns the same **entity** object as [Look up an entity](/institutions/reference-data/entities/lookup).
@@ -17,13 +17,13 @@ Fetch one entity by its Oddpool ID. Returns the same **entity** object as [Look 
 <CodeGroup>
 ```bash cURL
 curl -H "X-API-Key: your_api_key" \
-  "https://api.oddpool.com/reference/entities/OPE:TEAM:LOS-ANGELES-LAKERS"
+  "https://api.oddpool.com/reference/v2/entities/OPE:TEAM:LOS-ANGELES-LAKERS"
 ```
 ```python Python
 import requests
 
 r = requests.get(
-    "https://api.oddpool.com/reference/entities/OPE:TEAM:LOS-ANGELES-LAKERS",
+    "https://api.oddpool.com/reference/v2/entities/OPE:TEAM:LOS-ANGELES-LAKERS",
     headers={"X-API-Key": "your_api_key"},
 )
 entity = r.json()
