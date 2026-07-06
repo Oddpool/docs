@@ -4,7 +4,7 @@ description: "Page live or historical matched events, filtered by venue pair and
 api: "GET https://api.oddpool.com/reference/events"
 ---
 
-Page through matched events. Each item is a full **event**, the same object as [Get oddpool ID by ticker](/institutions/reference-data/events/lookup).
+Page through matched events. Each item is a full **event**, the same object as [Get Oddpool ID by ticker](/institutions/reference-data/events/lookup).
 
 <Tip>
 Pass `active=true` for events with markets still trading today. Without it you get the full corpus, which is mostly long-settled events.
@@ -19,7 +19,7 @@ Pass `active=true` for events with markets still trading today. Without it you g
   Category filter, sourced from Kalshi (e.g. `Sports`). Free text.
 </ParamField>
 <ParamField query="venue_pair" type="string">
-  Limit to events both venues list, e.g. `kalshi,polymarket`. Order doesn't matter. Required to use the three fungibility filters below.
+  Two venue tags, comma-separated, e.g. `kalshi,polymarket`. Order doesn't matter. Limits results to events both venues list, and is required to use the three fungibility filters below. Tags: `kalshi`, `polymarket`, `polymarket_us` — see [Supported venues](/institutions/reference-data/venues).
 </ParamField>
 <ParamField query="fungible" type="boolean">
   Needs `venue_pair`. `true` returns only events whose sides are fully interchangeable on that pair (`basis_class=identical` and `outcome_universe=identical`).

@@ -1,0 +1,30 @@
+---
+title: "Supported venues"
+description: "The venues you can pass to venue and venue_pair, and how they combine into pairs."
+---
+
+The registry currently covers these venues. Pass the **tag** wherever an endpoint takes a `venue`, and combine two tags for a `venue_pair`.
+
+| Tag | Venue |
+|-----|-------|
+| `kalshi` | Kalshi |
+| `polymarket` | Polymarket |
+| `polymarket_us` | Polymarket US |
+
+More venues are added over time; new tags appear here.
+
+## Where you pass them
+
+- **`venue`** — [Get Oddpool ID by ticker](/institutions/reference-data/events/lookup) takes a single tag alongside the venue's `id`.
+- **`venue_pair`** — [List matched events](/institutions/reference-data/events/list) takes two tags to scope the fungibility filters to one pair.
+- In responses, listings carry a `venue` tag, and `venue_pairs` entries carry `venue_a` / `venue_b`.
+
+## Venue pairs
+
+A `venue_pair` is two distinct tags, comma-separated and order-insensitive. With the current venues:
+
+- `kalshi,polymarket`
+- `kalshi,polymarket_us`
+- `polymarket,polymarket_us`
+
+Within a pair, venues are precedence-ordered `kalshi` < `polymarket` < `polymarket_us`, which fixes which side is `venue_a` and which is `venue_b` in responses.
