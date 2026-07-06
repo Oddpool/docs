@@ -1,0 +1,61 @@
+---
+title: "Entities & Wikidata"
+description: "Canonical entities, their kinds and metadata, and the Wikidata Q-ID cross-walk to external identifier systems."
+---
+
+A canonical entity is a real-world thing an outcome references — a person, team, party, company, cultural work, region, or event occurrence. Entities are shared across every event they appear in, carry a stable `OPE` identifier, and are addressable on their own through the [Entities](/institutions/reference-data/entities/lookup) endpoints.
+
+Where an outcome names an entity, it's linked inline under `outcome.entity`. Non-entity outcomes such as "Tie" or "Other" have `entity: null`.
+
+## Kinds
+
+The `kind` field is a closed enum:
+
+| `kind` | Examples |
+|--------|----------|
+| `person` | Donald Trump, Kylian Mbappé |
+| `team` | Los Angeles Lakers, Grêmio FBPA |
+| `political_party` | Democratic Party, Labour |
+| `cultural_work` | A film, album, or book |
+| `geographic_region` | A country, state, or city |
+| `organization` | A company or institution |
+| `event_occurrence` | A recurring named occurrence |
+
+## Wikidata cross-walk
+
+Every canonical entity carries a `wikidata_qid` — a Wikidata Q-ID that acts as a stable cross-reference handle to external identifier systems (FEC, bioguide, LEI, sports-reference, MusicBrainz, and more). This lets prediction-market data join the broader structured-data graph without bespoke entity matching on your side.
+
+```json
+{
+  "oddpool_id": "OPE:PERSON:DONALD-TRUMP",
+  "kind": "person",
+  "canonical_name": "Donald Trump",
+  "aliases": ["Trump", "Donald J. Trump", "President Trump", "Donald John Trump"],
+  "wikidata_qid": "Q22686",
+  "metadata": { "country": "Q30", "party_qid": "Q29468", "person_kind": "politician" },
+  "provenance": "wikidata",
+  "source_synced_at": "2026-05-27T01:16:04Z"
+}
+```
+
+## Metadata
+
+`metadata` is a kind-specific structured object. Its shape varies by `kind`:
+
+- **Person** — `country`, `party_qid`, `person_kind`, …
+- **Team** — `league`, `sport`, `city`, `parent_qid`, …
+- **Political party** — `country`, `short_name`, …
+- **Organization** — `country`, `tickers`, …
+
+<Note>
+Treat `metadata` as an unrestricted JSON object. Rely on the keys you recognize and ignore the rest. Values that reference other entities are given as Wikidata Q-IDs (e.g. `country: "Q30"`, `party_qid: "Q29468"`).
+</Note>
+
+## Provenance
+
+`provenance` names the source of the canonical record:
+
+- `wikidata` — the canonical record is sourced from Wikidata. `source_synced_at` is the timestamp of the most recent Wikidata sync.
+- `llm_auto` — the entity was auto-minted from venue text when no Wikidata match was available. These have no `wikidata_qid`.
+
+Filter by provenance on the list endpoint with `?provenance=wikidata` or `?provenance=llm_auto`. See [Search and list entities](/institutions/reference-data/entities/list).

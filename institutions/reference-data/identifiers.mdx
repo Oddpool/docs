@@ -1,0 +1,41 @@
+---
+title: "Identifiers"
+description: "OPE / OPI / OPO / OPL formats — deterministic and cache-safe for the lifetime of the canonical row."
+---
+
+Every canonical layer has its own Oddpool ID. IDs are deterministic and stable for the lifetime of the underlying row, so once you've resolved a venue identifier to a canonical one, the mapping doesn't move underneath you. All four families are safe to cache indefinitely.
+
+| Family | Layer   | Format                                        | Example                             |
+|--------|---------|-----------------------------------------------|-------------------------------------|
+| OPE    | Entity  | `OPE:{KIND}:{slug}`                            | `OPE:PERSON:DONALD-TRUMP`           |
+| OPI    | Event   | `OPI-{8-char base32}`                          | `OPI-OO4GBEZJ`                      |
+| OPO    | Outcome | `OPO:{opi-suffix}:{label-slug}-{4-char hash}`  | `OPO:OO4GBEZJ:GREMIO-FBPA-JITQ`     |
+| OPL    | Listing | `OPL:{VENUE}:{slug(venue_market_id)}`          | `OPL:KALSHI:KXPRESPARTY-28-TRUMP`   |
+
+<Note>
+Treat Oddpool IDs as opaque handles. The formats above are documented so they're recognizable in logs, but resolve and store them rather than constructing or parsing them yourself.
+</Note>
+
+## URL encoding
+
+`OPE` and `OPO` ids contain colons. Colons are URL-safe per RFC 3986, so they can be used directly in a path (`/reference/entities/OPE:TEAM:LOS-ANGELES-LAKERS`). Clients that URL-encode them may use `OPE%3ATEAM%3ALOS-ANGELES-LAKERS` equivalently.
+
+## Stability and freshness
+
+Oddpool IDs are deterministic — OPI / OPE / OPO / OPL identifiers are cache-safe for the lifetime of the underlying canonical row.
+
+`classified_at` advances when the canonical record is re-evaluated: outcomes added, settlement reclassified, divergence re-validated. It does **not** advance on price or volume changes. Use it as a high-water mark for incremental sync:
+
+```bash
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/events?classified_since=2026-05-25T00:00:00Z"
+```
+
+`classified_at` advances on:
+
+- New canonical event creation.
+- Attachment of a new venue listing to an existing event.
+- Outcome edits — label correction, split, merge.
+- Settlement re-classification and divergence re-validation.
+
+Store the max `classified_at` you've seen and pass it as `classified_since` on your next sync to fetch only what changed. See [List canonical events](/institutions/reference-data/events/list).

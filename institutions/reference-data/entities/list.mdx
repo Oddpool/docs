@@ -1,0 +1,69 @@
+---
+title: "Search entities"
+description: "Search and page canonical entities by substring, kind, Wikidata Q-ID, or provenance."
+api: "GET https://api.oddpool.com/reference/entities"
+---
+
+Returns a paginated list of canonical entities. The `q` parameter performs a case-insensitive substring match against `canonical_name`. Pages are ordered by ascending internal id.
+
+## Parameters
+
+<ParamField query="q" type="string">
+  Case-insensitive substring match against `canonical_name`, e.g. `mbappe`.
+</ParamField>
+<ParamField query="kind" type="string">
+  One of `person`, `team`, `political_party`, `cultural_work`, `geographic_region`, `organization`, `event_occurrence`.
+</ParamField>
+<ParamField query="wikidata_qid" type="string">
+  Filter to a specific Wikidata Q-ID.
+</ParamField>
+<ParamField query="provenance" type="string">
+  Filter by canonical source: `wikidata` for Wikidata-backed records, `llm_auto` for auto-minted ones.
+</ParamField>
+<ParamField query="limit" type="integer" default="50">
+  Maximum items in the page (1–2000).
+</ParamField>
+<ParamField query="cursor" type="string">
+  Opaque cursor from the previous response's `next_cursor`.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/reference/entities?q=lakers&kind=team"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/reference/entities",
+    headers={"X-API-Key": "your_api_key"},
+    params={"q": "lakers", "kind": "team"},
+)
+page = response.json()
+```
+</CodeGroup>
+
+## Response
+
+Each item is a [canonical entity](/institutions/reference-data/entity-model). `next_cursor` is the cursor for the next page, or `null` when there are no more pages.
+
+```json
+{
+  "items": [
+    {
+      "oddpool_id": "OPE:TEAM:LOS-ANGELES-LAKERS",
+      "kind": "team",
+      "canonical_name": "Los Angeles Lakers",
+      "aliases": ["Lakers", "LA Lakers", "LAL"],
+      "wikidata_qid": "Q121783",
+      "metadata": { "league": "NBA", "sport": "basketball", "city": "Los Angeles" },
+      "provenance": "wikidata",
+      "source_synced_at": "2026-05-27T01:16:04Z"
+    }
+  ],
+  "next_cursor": null
+}
+```

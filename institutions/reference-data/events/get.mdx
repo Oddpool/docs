@@ -1,0 +1,47 @@
+---
+title: "Get an event by ID"
+description: "Retrieve a canonical event by its Oddpool ID."
+api: "GET https://api.oddpool.com/reference/events/{opi}"
+---
+
+Returns the canonical event with the same shape as [Resolve a venue identifier](/institutions/reference-data/events/lookup) — the event, its per-pair classification, outcomes, linked entities, and venue listings.
+
+## Parameters
+
+<ParamField path="opi" type="string" required>
+  Oddpool event identifier (`OPI-XXXXXXXX`).
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/reference/events/OPI-OO4GBEZJ"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/reference/events/OPI-OO4GBEZJ",
+    headers={"X-API-Key": "your_api_key"},
+)
+event = response.json()
+```
+</CodeGroup>
+
+## Response
+
+A [canonical event](/institutions/reference-data/canonical-model), identical in shape to the lookup endpoint. See [Resolve a venue identifier](/institutions/reference-data/events/lookup#response) for the full payload.
+
+Returns `404` with `error_code: EVENT_NOT_FOUND` when no canonical event has this identifier.
+
+```json
+{
+  "detail": {
+    "error_code": "EVENT_NOT_FOUND",
+    "error": "no_canonical_match",
+    "oddpool_id": "OPI-NONEXIST"
+  }
+}
+```

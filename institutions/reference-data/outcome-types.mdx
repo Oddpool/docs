@@ -1,0 +1,89 @@
+---
+title: "Outcome types"
+description: "The outcome_kind taxonomy, structured outcome_params for numeric and time-bound outcomes, and how to address a venue side."
+---
+
+Every canonical outcome has an `outcome_kind` naming its structural type, and an `outcome_params` object carrying type-specific parameters.
+
+| `outcome_kind`        | Outcome shape                                          |
+|-----------------------|--------------------------------------------------------|
+| `binary`              | Single YES/NO proposition.                             |
+| `multi_class_named`   | N named entity outcomes; one wins.                     |
+| `range_bin`           | Continuous variable bucketed into discrete intervals.  |
+| `threshold_above`     | Cumulative ladder: above N / ≥ N.                      |
+| `threshold_below`     | Cumulative ladder: below N / ≤ N.                      |
+| `point_mass`          | Exact-value outcome.                                   |
+| `spread`              | Handicap on a line.                                    |
+| `will_happen_by_date` | Time-bound binary with a deadline.                     |
+
+## Outcome parameters
+
+Numeric outcomes carry their parameters under `outcome_params.bucket` with fields `{shape, lo, hi, lo_inclusive, hi_inclusive, units}`. Time-bound binary outcomes carry `outcome_params.deadline` with fields `{iso8601, inclusive}`. `binary` and `multi_class_named` have no structural params.
+
+```jsonc
+// range_bin — half-open numeric interval
+"outcome_params": { "bucket": {
+    "shape": "discrete_range",
+    "lo": 0.0, "hi": 50000.0,
+    "lo_inclusive": true, "hi_inclusive": false,
+    "units": "count"
+} }
+
+// threshold_above — cumulative ladder, open upper bound
+"outcome_params": { "bucket": {
+    "shape": "cumulative_threshold",
+    "lo": 25.0, "hi": null,
+    "lo_inclusive": false, "hi_inclusive": null,
+    "units": "bps"
+} }
+
+// threshold_below — cumulative ladder, open lower bound
+"outcome_params": { "bucket": {
+    "shape": "cumulative_below",
+    "lo": null, "hi": 0.0,
+    "lo_inclusive": null, "hi_inclusive": false,
+    "units": "count"
+} }
+
+// point_mass — exact value
+"outcome_params": { "bucket": {
+    "shape": "point_value",
+    "lo": -25, "hi": -25,
+    "lo_inclusive": true, "hi_inclusive": true,
+    "units": "bps"
+} }
+
+// spread — handicap on a line; `line` and `side` are spread-only
+"outcome_params": { "bucket": {
+    "shape": "spread", "line": 1.5, "side": "favorite",
+    "lo": 1.5, "hi": null,
+    "lo_inclusive": false, "hi_inclusive": null,
+    "units": "pts"
+} }
+
+// will_happen_by_date
+"outcome_params": { "deadline": { "iso8601": "2027-01-01", "inclusive": false } }
+
+// binary, multi_class_named — no structural params
+"outcome_params": { }
+```
+
+<Note>
+Additional non-load-bearing fields may appear alongside `bucket` / `deadline` (`unmatched_in_counterparty`, `residual`, audit-trail keys). Rely on `bucket` / `deadline`; ignore unknown siblings.
+</Note>
+
+## Addressing the tradeable side
+
+Each outcome's `venue_listings` carry a `venue_market_id` — the venue's native identifier for that tradeable side.
+
+| Venue | `venue_market_id` |
+|-------|-------------------|
+| Kalshi | Market ticker. |
+| Polymarket, binary YES/NO | `conditionId`. |
+| Polymarket, atomic-binary multi-side | `conditionId#<index>`. |
+
+### Polymarket atomic-binary markets
+
+Polymarket "atomic-binary" multi-side markets package N candidate outcomes under one `conditionId`; each side is addressed by a numeric index. This is exposed in `OutcomeVenueListing.venue_market_id` as `<conditionId>#<index>`. To address the underlying CLOB, split on `#` to recover the native `conditionId`, and subscribe to the side using its `venue_yes_token` / `venue_no_token` (Polymarket CLOB token IDs).
+
+Kalshi listings have no CLOB tokens — `venue_yes_token` and `venue_no_token` are `null`.

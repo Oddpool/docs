@@ -1,0 +1,39 @@
+---
+title: "Get an entity by ID"
+description: "Retrieve a canonical entity by its Oddpool ID."
+api: "GET https://api.oddpool.com/reference/entities/{ope}"
+---
+
+Returns the canonical entity with the same shape as [Resolve an entity](/institutions/reference-data/entities/lookup).
+
+## Parameters
+
+<ParamField path="ope" type="string" required>
+  Oddpool entity identifier, e.g. `OPE:TEAM:LOS-ANGELES-LAKERS`.
+</ParamField>
+
+<Note>
+Colons in the path are URL-safe per RFC 3986. Clients that URL-encode them may use `OPE%3ATEAM%3ALOS-ANGELES-LAKERS` equivalently.
+</Note>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/reference/entities/OPE:TEAM:LOS-ANGELES-LAKERS"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/reference/entities/OPE:TEAM:LOS-ANGELES-LAKERS",
+    headers={"X-API-Key": "your_api_key"},
+)
+entity = response.json()
+```
+</CodeGroup>
+
+## Response
+
+A [canonical entity](/institutions/reference-data/entity-model), identical in shape to the lookup endpoint. Returns `404` with `error_code: ENTITY_NOT_FOUND` when no canonical entity has this identifier.

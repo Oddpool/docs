@@ -1,0 +1,75 @@
+---
+title: "Resolve an entity"
+description: "Resolve a Wikidata Q-ID, Oddpool ID, or (kind, name) pair to a canonical entity."
+api: "GET https://api.oddpool.com/reference/entities/lookup"
+---
+
+Returns the canonical entity. Exactly one resolution form must be supplied: `oddpool_id`, `wikidata_qid`, or `kind` + `name`.
+
+## Parameters
+
+<ParamField query="oddpool_id" type="string">
+  Oddpool entity identifier, e.g. `OPE:PERSON:DONALD-TRUMP`.
+</ParamField>
+<ParamField query="wikidata_qid" type="string">
+  Wikidata Q-ID, e.g. `Q22686`.
+</ParamField>
+<ParamField query="kind" type="string">
+  One of `person`, `team`, `political_party`, `cultural_work`, `geographic_region`, `organization`, `event_occurrence`. Combine with `name` for an exact composite lookup.
+</ParamField>
+<ParamField query="name" type="string">
+  Exact canonical name (case-insensitive). Used in combination with `kind`.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/reference/entities/lookup?wikidata_qid=Q22686"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/reference/entities/lookup",
+    headers={"X-API-Key": "your_api_key"},
+    params={"wikidata_qid": "Q22686"},
+)
+entity = response.json()
+```
+</CodeGroup>
+
+## Response
+
+Returns a [canonical entity](/institutions/reference-data/entity-model).
+
+```json
+{
+  "oddpool_id": "OPE:PERSON:DONALD-TRUMP",
+  "kind": "person",
+  "canonical_name": "Donald Trump",
+  "aliases": ["Trump", "Donald J. Trump", "President Trump", "Donald John Trump"],
+  "wikidata_qid": "Q22686",
+  "metadata": { "country": "Q30", "party_qid": "Q29468", "person_kind": "politician" },
+  "provenance": "wikidata",
+  "source_synced_at": "2026-05-27T01:16:04Z"
+}
+```
+
+<Note>
+To find every event a known entity appears in, page [`/reference/events`](/institutions/reference-data/events/list) and filter client-side.
+</Note>
+
+## Not found
+
+Returns `404` with `error_code: ENTITY_NOT_FOUND` when no canonical entity matches.
+
+```json
+{
+  "detail": {
+    "error_code": "ENTITY_NOT_FOUND",
+    "oddpool_id": "OPE:PERSON:NOT-A-REAL-PERSON"
+  }
+}
+```

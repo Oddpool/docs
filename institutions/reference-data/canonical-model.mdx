@@ -1,0 +1,61 @@
+---
+title: "Canonical model"
+description: "Four nested layers — entity, event, outcome, venue listing — that resolve to one tradeable side per venue."
+---
+
+The registry has four layers. Each has its own stable Oddpool ID, and they nest inside one another in API responses.
+
+```text
+canonical entity   (OPE)   a person, team, party, company, etc.
+    ▲
+canonical event    (OPI)   one resolution moment
+    │
+canonical outcome  (OPO)   one named answer on the event
+    │
+venue listing      (OPL)   one venue's tradeable side of that outcome
+```
+
+## The layers
+
+<Steps>
+  <Step title="Canonical event (OPI)">
+    One resolution moment — a specific game between specific teams at a specific time, a specific election for a specific seat, a specific Fed meeting. The event is the top-level object returned by [`/reference/events/lookup`](/institutions/reference-data/events/lookup) and [`/reference/events/{opi}`](/institutions/reference-data/events/get). It carries a `title`, a `subject_domain`, its `venue_listings` at the event layer, the per-pair `venue_pairs` classification, and its `outcomes`.
+  </Step>
+  <Step title="Canonical outcome (OPO)">
+    One named answer on the event — "Grêmio FBPA", "Yes", "Over 9.5 total corners". Each outcome carries a `label`, an [`outcome_kind`](/institutions/reference-data/outcome-types) and its structured `outcome_params`, an optional linked `entity`, its own per-pair `venue_pairs` fungibility, and its `venue_listings` at the outcome layer.
+  </Step>
+  <Step title="Venue listing (OPL)">
+    One venue's tradeable side of an outcome. The outcome-layer listing carries the `venue_market_id` — the venue's native identifier for that side — plus Polymarket CLOB `venue_yes_token` / `venue_no_token` where applicable. This is what you subscribe to for live prices. There is also an event-layer listing (`venue_event_id` + the raw `venue_question`) that names the parent event on each venue.
+  </Step>
+  <Step title="Canonical entity (OPE)">
+    A real-world entity an outcome references — a person, team, political party, company, cultural work, region, or event occurrence. Entities are shared across every event they appear in and are addressable on their own via the [Entities](/institutions/reference-data/entities/lookup) endpoints. Each carries a Wikidata Q-ID cross-walk. See [Entities & Wikidata](/institutions/reference-data/entity-model).
+  </Step>
+</Steps>
+
+## How it fits together in a response
+
+A single event lookup returns the whole tree in one payload: the event, its outcomes, each outcome's linked entity, and each outcome's per-venue listings with the ids you trade on.
+
+```json
+{
+  "oddpool_id": "OPI-OO4GBEZJ",
+  "title": "Gremio vs Corinthians",
+  "subject_domain": "Sports",
+  "venue_pairs": [ /* per-pair basis_class / outcome_universe */ ],
+  "venue_listings": [ /* event-layer: one per venue */ ],
+  "outcomes": [
+    {
+      "oddpool_id": "OPO:OO4GBEZJ:GREMIO-FBPA-JITQ",
+      "label": "Grêmio FBPA",
+      "outcome_kind": "multi_class_named",
+      "entity": { "oddpool_id": "OPE:TEAM:GREMIO-FBPA", "wikidata_qid": "Q190301" },
+      "venue_pairs": [ /* per-pair fungibility for THIS outcome */ ],
+      "venue_listings": [ /* outcome-layer: the tradeable side per venue */ ]
+    }
+  ]
+}
+```
+
+<Note>
+Classification lives at two layers. Event-level `venue_pairs` carry `basis_class` and `outcome_universe`; outcome-level `venue_pairs` carry `fungible` + `divergence_axes`. Both are keyed by venue pair, not scalar on the object — see [Fungibility & classification](/institutions/reference-data/fungibility).
+</Note>

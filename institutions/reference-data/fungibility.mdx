@@ -1,0 +1,80 @@
+---
+title: "Fungibility & classification"
+description: "basis_class, outcome_universe, and divergence_axes — telling a truly fungible cross-listing from a structurally divergent one."
+---
+
+Two venues listing "the same" event rarely settle identically in every edge case. The registry makes the difference explicit so you can route on it instead of discovering it at settlement.
+
+Fungibility is a property of a **venue pair**, not a scalar on the event. An event listed on N venues has one relationship per pair of venues. Classification lives at two layers:
+
+- **Event level** — `CanonicalEvent.venue_pairs` carries `basis_class` and `outcome_universe`, one entry per pair of venues that both list the event (`kalshi`×`polymarket`, `kalshi`×`polymarket_us`, …).
+- **Outcome level** — each outcome's `venue_pairs` carries a `fungible` boolean, a `divergence_axes` array, and a one-sentence `divergence_reason`, one entry per pair of venues that both list *that outcome*.
+
+<Note>
+Venues in a pair are precedence-ordered (`kalshi` < `polymarket` < `polymarket_us`). `venue_a_event_id` / `venue_b_event_id` name the exact venue events the pair relates — needed under N:M where a canonical event spans several events on one venue, redundant in the common 1:1 case.
+</Note>
+
+## Event level: `basis_class`
+
+The settlement-rule axis. Whether the two venues agree on when, by what authority, and under what timing window the event resolves.
+
+| Value               | Definition |
+|---------------------|------------|
+| `identical`         | Same resolution anchor, same authority, gap ≤ 24 hours. |
+| `settlement_window` | Settlement timestamps diverge by more than 24 hours, or the venues anchor on different stages of the resolution chain (e.g., election day vs. certification). |
+| `settlement_source` | Both venues settle on the same nominal value but read it from two different named authorities (e.g., National Weather Service vs. Weather Underground). |
+
+## Event level: `outcome_universe`
+
+The outcome-list correspondence axis — how much of the two venues' outcome sets line up.
+
+| Value       | Definition |
+|-------------|------------|
+| `identical` | Every outcome paired 1:1 across the two venues. |
+| `partial`   | Some outcomes paired, at least one is one-sided. |
+| `disjoint`  | No outcomes are paired across the two venues. |
+
+## Outcome level: `divergence_axes`
+
+How the two listings settle differently when they are the same nominal outcome. Empty — with the event leg's `basis_class == identical` — means fully fungible.
+
+| Axis | Definition |
+|------|------------|
+| `timing` | Same outcome, but the two venues fix the result at different moments — one on the event itself, the other on a later administrative step (certification, swearing-in). The eventual answer matches, but early-resolution and payout timing can differ. |
+| `source` | Same value, but the venues read it from two different named authorities (e.g. National Weather Service vs. Weather Underground). They agree in the modal case but can diverge on edge measurements. |
+| `condition_scope` | Same nominal outcome, but the venues resolve an edge case to different cash settlements — e.g. one pays fair/last-traded price on a cancelled or postponed event while the other resolves No or 50-50, or the two differ on what counts toward the condition (which platform, phase, or category is in scope). This frequently reflects the venues' standard cancellation/postponement policies, so it appears often on sports and entertainment markets; `divergence_reason` states the specific case. |
+
+## The operational read
+
+To find cross-listings you can trade as one instrument on a given venue pair, read that outcome's `venue_pairs` entry:
+
+- **`fungible: true`** — same payoff, same nominal value, same authority, same timing. The two `OutcomeVenueListing` rows can be treated as one instrument for quoting, hedging, and risk.
+- **`fungible: false`** — `divergence_axes` (plus the event leg's `basis_class`) identify how they settle differently in edge cases; `divergence_reason` names the case.
+
+`fungible` is true iff the event leg's `basis_class == identical` **and** the outcome's `divergence_axes == []`. It's the one-glance answer; the axes are the why.
+
+```json
+{
+  "label": "Grêmio FBPA",
+  "venue_pairs": [
+    {
+      "venue_a": "kalshi",
+      "venue_b": "polymarket",
+      "fungible": false,
+      "divergence_axes": ["condition_scope"],
+      "divergence_reason": "Both resolve Yes if Grêmio wins in 90 minutes plus stoppage time, but Kalshi sends cancellation/reschedule over two weeks to fair price while Polymarket keeps postponed games open and canceled-without-makeup resolves No."
+    }
+  ]
+}
+```
+
+## Filtering the list endpoint
+
+Scope fungibility filters to the venue pair you trade. To page only the fully-fungible events for that pair:
+
+```bash
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/events?venue_pair=kalshi,polymarket&fungible=true&active=true"
+```
+
+`venue_pair` is order-insensitive and required for the `fungible`, `basis_class`, and `outcome_universe` filters. See [List canonical events](/institutions/reference-data/events/list) for the full parameter set.

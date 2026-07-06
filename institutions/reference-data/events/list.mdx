@@ -1,0 +1,94 @@
+---
+title: "List events"
+description: "Page the canonical event corpus, with fungibility filters and incremental sync."
+api: "GET https://api.oddpool.com/reference/events"
+---
+
+Returns a paginated list of canonical events. Each event carries the full canonical shape returned by [Get an event by ID](/institutions/reference-data/events/get).
+
+<Tip>
+For production reads against currently-trading markets, pass `active=true`. Without it the listing returns the full corpus, which is dominated by long-settled events.
+</Tip>
+
+## Parameters
+
+<ParamField query="active" type="boolean">
+  When `true`, return only canonical events with at least one underlying venue event still in `active` status. Omit (or pass `false`) for the full corpus, including settled events. Recommended default for live-trading consumers.
+</ParamField>
+<ParamField query="subject_domain" type="string">
+  Free-text category, sourced from Kalshi (e.g. `Sports`). Not a closed enum.
+</ParamField>
+<ParamField query="venue_pair" type="string">
+  Scope fungibility filters to one venue pair, e.g. `kalshi,polymarket`. Order-insensitive. Returns only events where both venues list the event. Required for `fungible`, `basis_class`, and `outcome_universe`.
+</ParamField>
+<ParamField query="fungible" type="boolean">
+  Requires `venue_pair`. `true` → that leg is fully fungible (`basis_class=identical` **and** `outcome_universe=identical`); `false` → the leg is present but not fully fungible.
+</ParamField>
+<ParamField query="basis_class" type="string">
+  Requires `venue_pair`. Filter that leg's `basis_class`: `identical`, `settlement_window`, or `settlement_source`.
+</ParamField>
+<ParamField query="outcome_universe" type="string">
+  Requires `venue_pair`. Filter that leg's `outcome_universe`: `identical`, `partial`, or `disjoint`.
+</ParamField>
+<ParamField query="classified_since" type="datetime">
+  ISO 8601 timestamp. Returns events whose canonical state was last refreshed on or after this instant. Use for incremental sync.
+</ParamField>
+<ParamField query="limit" type="integer" default="50">
+  Maximum items in the page (1–2000).
+</ParamField>
+<ParamField query="cursor" type="string">
+  Opaque cursor from the previous response's `next_cursor`.
+</ParamField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/reference/events?venue_pair=kalshi,polymarket&fungible=true&active=true&limit=100"
+```
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.oddpool.com/reference/events",
+    headers={"X-API-Key": "your_api_key"},
+    params={
+        "venue_pair": "kalshi,polymarket",
+        "fungible": "true",
+        "active": "true",
+        "limit": 100,
+    },
+)
+page = response.json()
+```
+</CodeGroup>
+
+## Response
+
+Each item is a full [canonical event](/institutions/reference-data/canonical-model). `next_cursor` is the cursor for the next page, or `null` when there are no more pages.
+
+```json
+{
+  "items": [
+    { "oddpool_id": "OPI-OO4GBEZJ", "title": "Gremio vs Corinthians", "...": "full canonical event" }
+  ],
+  "next_cursor": "eyJpZCI6MTI4NDQ0fQ"
+}
+```
+
+## Pagination
+
+Cursors are opaque. Pages are ordered by ascending internal id; when the underlying corpus only appends, this is also append-only chronological order. Page by following `next_cursor` until it is `null`:
+
+```bash
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/events?limit=100"
+# then follow next_cursor from each response
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/events?limit=100&cursor=<next_cursor>"
+```
+
+## Incremental sync
+
+For incremental synchronization, pass `classified_since` set to the timestamp of your most recent prior sync. `classified_at` advances on new event creation, attachment of a new venue listing, outcome edits (label correction, split, merge), and settlement re-classification. It does **not** advance on price or volume changes. See [Identifiers](/institutions/reference-data/identifiers#stability-and-freshness).
