@@ -1,15 +1,15 @@
 ---
 title: "Search entities"
-description: "Search and page canonical entities by substring, kind, Wikidata Q-ID, or provenance."
+description: "Find entities by substring and kind."
 api: "GET https://api.oddpool.com/reference/entities"
 ---
 
-Returns a paginated list of canonical entities. The `q` parameter performs a case-insensitive substring match against `canonical_name`. Pages are ordered by ascending internal id.
+Search and page entities. `q` is a case-insensitive substring match on the canonical name. Each item is the same shape as [Resolve an entity](/institutions/reference-data/entities/lookup#response).
 
-## Parameters
+## Query parameters
 
 <ParamField query="q" type="string">
-  Case-insensitive substring match against `canonical_name`, e.g. `mbappe`.
+  Substring match on the canonical name, e.g. `lakers`.
 </ParamField>
 <ParamField query="kind" type="string">
   One of `person`, `team`, `political_party`, `cultural_work`, `geographic_region`, `organization`, `event_occurrence`.
@@ -18,16 +18,16 @@ Returns a paginated list of canonical entities. The `q` parameter performs a cas
   Filter to a specific Wikidata Q-ID.
 </ParamField>
 <ParamField query="provenance" type="string">
-  Filter by canonical source: `wikidata` for Wikidata-backed records, `llm_auto` for auto-minted ones.
+  `wikidata` for Wikidata-backed records, `llm_auto` for auto-minted ones.
 </ParamField>
 <ParamField query="limit" type="integer" default="50">
-  Maximum items in the page (1–2000).
+  Items per page (1–2000).
 </ParamField>
 <ParamField query="cursor" type="string">
-  Opaque cursor from the previous response's `next_cursor`.
+  The `next_cursor` from the previous response.
 </ParamField>
 
-## Example
+## Request
 
 <CodeGroup>
 ```bash cURL
@@ -37,18 +37,23 @@ curl -H "X-API-Key: your_api_key" \
 ```python Python
 import requests
 
-response = requests.get(
+r = requests.get(
     "https://api.oddpool.com/reference/entities",
     headers={"X-API-Key": "your_api_key"},
     params={"q": "lakers", "kind": "team"},
 )
-page = response.json()
+page = r.json()
 ```
 </CodeGroup>
 
 ## Response
 
-Each item is a [canonical entity](/institutions/reference-data/entity-model). `next_cursor` is the cursor for the next page, or `null` when there are no more pages.
+<ResponseField name="items" type="object[]">
+  A page of entities, each the shape from [Resolve an entity](/institutions/reference-data/entities/lookup#response).
+</ResponseField>
+<ResponseField name="next_cursor" type="string | null">
+  Pass as `cursor` for the next page. `null` on the last page.
+</ResponseField>
 
 ```json
 {

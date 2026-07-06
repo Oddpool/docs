@@ -1,31 +1,28 @@
 ---
-title: "Resolve a venue identifier"
-description: "Resolve a Kalshi or Polymarket identifier to the canonical event."
+title: "Resolve a venue ticker"
+description: "Turn a Kalshi or Polymarket id into the matched event, with every outcome and venue side."
 api: "GET https://api.oddpool.com/reference/events/lookup"
 ---
 
-Accepts a Kalshi or Polymarket identifier and returns the canonical event with all attached venue listings, canonical outcomes, and linked entities.
+Give this endpoint a Kalshi or Polymarket id and it returns the matched event: every venue that lists it, every outcome, the entity each outcome refers to, and the venue ticker you trade on each side.
 
-Kalshi inputs may be either an event ticker or a market ticker — a market ticker resolves to its parent event. Polymarket atomic-binary markets carrying a `#N` side suffix are normalized during lookup.
+Kalshi input can be an event ticker or a market ticker (a market ticker resolves to its parent event). Polymarket input can be a conditionId, event slug, or numeric event id.
 
-## Parameters
+## Query parameters
 
-Supply either `oddpool_id`, or `venue` + `id`.
+Pass either `oddpool_id`, or `venue` + `id`.
 
-<ParamField query="oddpool_id" type="string">
-  Oddpool event identifier (`OPI-XXXXXXXX`). Mutually exclusive with `venue` + `id`.
-</ParamField>
 <ParamField query="venue" type="string">
-  Venue tag: `kalshi`, `polymarket`, or `polymarket_us`. Required when looking up by `id`.
+  `kalshi`, `polymarket`, or `polymarket_us`. Required when you pass `id`.
 </ParamField>
 <ParamField query="id" type="string">
-  Venue-side identifier.
-
-  - **Kalshi:** event ticker or market ticker.
-  - **Polymarket:** conditionId (`0x…`), event slug, or numeric event id.
+  The venue's id. Kalshi: event or market ticker. Polymarket: conditionId (`0x…`), event slug, or numeric event id.
+</ParamField>
+<ParamField query="oddpool_id" type="string">
+  An Oddpool event id (`OPI-XXXXXXXX`) instead of a venue id.
 </ParamField>
 
-## Example
+## Request
 
 <CodeGroup>
 ```bash cURL
@@ -35,48 +32,134 @@ curl -H "X-API-Key: your_api_key" \
 ```python Python
 import requests
 
-response = requests.get(
+r = requests.get(
     "https://api.oddpool.com/reference/events/lookup",
     headers={"X-API-Key": "your_api_key"},
     params={"venue": "kalshi", "id": "KXBRASILEIROGAME-26MAY30GPACOR-GPA"},
 )
-event = response.json()
+event = r.json()
 ```
 </CodeGroup>
 
 ## Response
 
-Returns a [canonical event](/institutions/reference-data/canonical-model): the event, its per-pair classification, its outcomes, each outcome's linked entity, and the venue listings you subscribe to.
+<ResponseField name="oddpool_id" type="string">
+  The event id (`OPI-XXXXXXXX`). Stable for the life of the event.
+</ResponseField>
+<ResponseField name="title" type="string">
+  Display title, e.g. `Gremio vs Corinthians`.
+</ResponseField>
+<ResponseField name="subject_domain" type="string | null">
+  Category, sourced from Kalshi (e.g. `Sports`). Free text, may be `null`.
+</ResponseField>
+<ResponseField name="classified_at" type="string | null">
+  ISO 8601 timestamp of the last time this event was re-evaluated (outcome added, settlement reclassified). Use it as the high-water mark for incremental sync via `classified_since`. Does not move on price or volume changes.
+</ResponseField>
 
+<ResponseField name="venue_listings" type="object[]">
+  The event as each venue lists it — one entry per venue.
+  <Expandable title="fields">
+    <ResponseField name="oddpool_id" type="string">Listing id (`OPL:…`).</ResponseField>
+    <ResponseField name="venue" type="string">`kalshi`, `polymarket`, or `polymarket_us`.</ResponseField>
+    <ResponseField name="venue_event_id" type="string">The venue's id for the parent event.</ResponseField>
+    <ResponseField name="venue_question" type="string | null">The venue's raw question text at mapping time.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="venue_pairs" type="object[]">
+  Where the venues agree on settlement — one entry per pair of venues that both list the event. This is event-level agreement; per-outcome fungibility is on each outcome below.
+  <Expandable title="fields">
+    <ResponseField name="venue_a / venue_b" type="string">The two venues, precedence-ordered (`kalshi` < `polymarket` < `polymarket_us`).</ResponseField>
+    <ResponseField name="venue_a_event_id / venue_b_event_id" type="string">Each venue's event id for this pair.</ResponseField>
+    <ResponseField name="basis_class" type="string | null">
+      Whether the two venues settle on the same thing at the same time.
+      - `identical` — same anchor, same authority, within 24h.
+      - `settlement_window` — settlement times differ by more than 24h, or the venues anchor on different stages (election day vs. certification).
+      - `settlement_source` — same value read from two different authorities (e.g. National Weather Service vs. Weather Underground).
+    </ResponseField>
+    <ResponseField name="outcome_universe" type="string | null">
+      How much the two venues' outcome lists line up.
+      - `identical` — every outcome pairs 1:1.
+      - `partial` — some pair, at least one is one-sided.
+      - `disjoint` — none pair.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="outcomes" type="object[]">
+  Each named answer on the event.
+  <Expandable title="fields">
+    <ResponseField name="oddpool_id" type="string">Outcome id (`OPO:…`).</ResponseField>
+    <ResponseField name="label" type="string">Display label — an entity name, `Yes`, a bucket descriptor, etc.</ResponseField>
+    <ResponseField name="outcome_kind" type="string">
+      The outcome's shape.
+      - `binary` — single Yes/No.
+      - `multi_class_named` — N named entities, one wins.
+      - `range_bin` — a bucketed numeric interval.
+      - `threshold_above` / `threshold_below` — a cumulative ≥ N / ≤ N ladder.
+      - `point_mass` — an exact value.
+      - `spread` — a handicap on a line.
+      - `will_happen_by_date` — a time-bound Yes/No with a deadline.
+    </ResponseField>
+    <ResponseField name="outcome_params" type="object">
+      Structured parameters for numeric and time-bound kinds; `{}` for `binary` and `multi_class_named`. See the shapes below.
+    </ResponseField>
+    <ResponseField name="entity" type="object | null">
+      The team / person / party this outcome refers to, or `null` for non-entity outcomes like `Tie`. Same shape as the [entity endpoints](/institutions/reference-data/entities/lookup) — `oddpool_id`, `kind`, `canonical_name`, `aliases`, `wikidata_qid`, `metadata`.
+    </ResponseField>
+    <ResponseField name="venue_listings" type="object[]">
+      The tradeable side of this outcome on each venue — the ids you subscribe to.
+      <Expandable title="fields">
+        <ResponseField name="oddpool_id" type="string">Listing id (`OPL:…`).</ResponseField>
+        <ResponseField name="venue" type="string">`kalshi`, `polymarket`, or `polymarket_us`.</ResponseField>
+        <ResponseField name="venue_market_id" type="string">
+          The venue's native id for this side — what you trade on.
+          - Kalshi: the market ticker.
+          - Polymarket binary: the `conditionId`.
+          - Polymarket atomic-binary: `conditionId#<index>` — split on `#` to recover the conditionId, then subscribe with the tokens below.
+        </ResponseField>
+        <ResponseField name="venue_yes_token / venue_no_token" type="string | null">Polymarket CLOB token ids for each side. `null` on Kalshi.</ResponseField>
+        <ResponseField name="venue_event_id" type="string | null">The venue's parent-event id.</ResponseField>
+        <ResponseField name="venue_question" type="string | null">The venue's raw question text at mapping time.</ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="venue_pairs" type="object[]">
+      Whether this outcome's two venue sides are one tradeable instrument — one entry per pair of venues that both list it.
+      <Expandable title="fields">
+        <ResponseField name="venue_a / venue_b" type="string">The two venues.</ResponseField>
+        <ResponseField name="fungible" type="boolean">
+          `true` when the sides settle identically (event `basis_class` is `identical` and `divergence_axes` is empty) — you can treat them as one instrument for quoting, hedging, and risk. The one-glance answer.
+        </ResponseField>
+        <ResponseField name="divergence_axes" type="string[]">
+          When not fungible, how the two sides settle differently. Empty means no divergence.
+          - `timing` — same answer, fixed at different moments (the event vs. a later certification / swearing-in).
+          - `source` — same value from two different authorities.
+          - `condition_scope` — differ on an edge case, e.g. cancellation / postponement policy, or what counts toward the condition. Common on sports and entertainment.
+        </ResponseField>
+        <ResponseField name="divergence_reason" type="string | null">One sentence naming the specific case, when `divergence_axes` is non-empty.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Accordion title="Example response">
 ```json
 {
   "oddpool_id": "OPI-OO4GBEZJ",
   "title": "Gremio vs Corinthians",
   "subject_domain": "Sports",
   "classified_at": "2026-05-25T18:42:11Z",
-  "venue_pairs": [
-    {
-      "venue_a": "kalshi",
-      "venue_a_event_id": "KXBRASILEIROGAME-26MAY30GPACOR",
-      "venue_b": "polymarket",
-      "venue_b_event_id": "445404",
-      "basis_class": "identical",
-      "outcome_universe": "identical"
-    }
-  ],
   "venue_listings": [
-    {
-      "oddpool_id": "OPL:KALSHI:KXBRASILEIROGAME-26MAY30GPACOR",
-      "venue": "kalshi",
+    { "oddpool_id": "OPL:KALSHI:KXBRASILEIROGAME-26MAY30GPACOR", "venue": "kalshi",
       "venue_event_id": "KXBRASILEIROGAME-26MAY30GPACOR",
-      "venue_question": "Who will win the Brasileirão match Grêmio vs Corinthians on May 30?"
-    },
-    {
-      "oddpool_id": "OPL:POLYMARKET:445404",
-      "venue": "polymarket",
-      "venue_event_id": "445404",
-      "venue_question": "Grêmio vs Corinthians: Match Result"
-    }
+      "venue_question": "Who will win the Brasileirão match Grêmio vs Corinthians on May 30?" },
+    { "oddpool_id": "OPL:POLYMARKET:445404", "venue": "polymarket",
+      "venue_event_id": "445404", "venue_question": "Grêmio vs Corinthians: Match Result" }
+  ],
+  "venue_pairs": [
+    { "venue_a": "kalshi", "venue_a_event_id": "KXBRASILEIROGAME-26MAY30GPACOR",
+      "venue_b": "polymarket", "venue_b_event_id": "445404",
+      "basis_class": "identical", "outcome_universe": "identical" }
   ],
   "outcomes": [
     {
@@ -84,59 +167,62 @@ Returns a [canonical event](/institutions/reference-data/canonical-model): the e
       "label": "Grêmio FBPA",
       "outcome_kind": "multi_class_named",
       "outcome_params": {},
-      "venue_pairs": [
-        {
-          "venue_a": "kalshi",
-          "venue_b": "polymarket",
-          "fungible": false,
-          "divergence_axes": ["condition_scope"],
-          "divergence_reason": "Both resolve Yes if Grêmio wins in 90 minutes plus stoppage time, but Kalshi sends cancellation/reschedule over two weeks to fair price while Polymarket keeps postponed games open and canceled-without-makeup resolves No."
-        }
-      ],
       "entity": {
-        "oddpool_id": "OPE:TEAM:GREMIO-FBPA",
-        "kind": "team",
-        "canonical_name": "Grêmio FBPA",
-        "aliases": ["Grêmio", "Gremio", "Tricolor Gaúcho"],
-        "wikidata_qid": "Q190301",
+        "oddpool_id": "OPE:TEAM:GREMIO-FBPA", "kind": "team", "canonical_name": "Grêmio FBPA",
+        "aliases": ["Grêmio", "Gremio", "Tricolor Gaúcho"], "wikidata_qid": "Q190301",
         "metadata": { "league": "Campeonato Brasileiro Série A", "sport": "association football", "city": "Porto Alegre" }
       },
       "venue_listings": [
-        {
-          "oddpool_id": "OPL:KALSHI:KXBRASILEIROGAME-26MAY30GPACOR-GPA",
-          "venue": "kalshi",
+        { "oddpool_id": "OPL:KALSHI:KXBRASILEIROGAME-26MAY30GPACOR-GPA", "venue": "kalshi",
           "venue_market_id": "KXBRASILEIROGAME-26MAY30GPACOR-GPA",
-          "venue_event_id": "KXBRASILEIROGAME-26MAY30GPACOR",
-          "venue_yes_token": null,
-          "venue_no_token": null,
-          "venue_question": "Gremio"
-        },
-        {
-          "oddpool_id": "OPL:POLYMARKET:0X830BC4...E12B1429",
-          "venue": "polymarket",
+          "venue_yes_token": null, "venue_no_token": null, "venue_question": "Gremio" },
+        { "oddpool_id": "OPL:POLYMARKET:0X830BC4...E12B1429", "venue": "polymarket",
           "venue_market_id": "0x830bc4cbe4fc945b6cee65eb1b0a5febacb16004c4c7b702a20376e6e12b1429",
-          "venue_event_id": "445404",
           "venue_yes_token": "30372052209701849468461148034092137114942310389987253992056832502897412952481",
           "venue_no_token": "74064390857285423190264600895526377480606423020566358098133374778358135580812",
-          "venue_question": "Grêmio FBPA"
-        }
+          "venue_question": "Grêmio FBPA" }
+      ],
+      "venue_pairs": [
+        { "venue_a": "kalshi", "venue_b": "polymarket", "fungible": false,
+          "divergence_axes": ["condition_scope"],
+          "divergence_reason": "Both resolve Yes if Grêmio wins in 90 minutes plus stoppage, but Kalshi sends cancellation/reschedule over two weeks to fair price while Polymarket keeps postponed games open and canceled-without-makeup resolves No." }
       ]
     }
   ]
 }
 ```
+</Accordion>
 
-## Not found
+<Accordion title="outcome_params shapes">
+Numeric kinds carry `outcome_params.bucket`; `will_happen_by_date` carries `outcome_params.deadline`. Rely on `bucket` / `deadline` and ignore any unknown sibling keys.
 
-Returns `404` with `error_code: EVENT_NOT_FOUND` when no canonical mapping exists for the identifier.
+```jsonc
+// range_bin — half-open numeric interval
+"outcome_params": { "bucket": { "shape": "discrete_range",
+  "lo": 0.0, "hi": 50000.0, "lo_inclusive": true, "hi_inclusive": false, "units": "count" } }
+
+// threshold_above — cumulative ladder, open upper bound
+"outcome_params": { "bucket": { "shape": "cumulative_threshold",
+  "lo": 25.0, "hi": null, "lo_inclusive": false, "hi_inclusive": null, "units": "bps" } }
+
+// point_mass — exact value
+"outcome_params": { "bucket": { "shape": "point_value",
+  "lo": -25, "hi": -25, "lo_inclusive": true, "hi_inclusive": true, "units": "bps" } }
+
+// spread — handicap on a line; line and side are spread-only
+"outcome_params": { "bucket": { "shape": "spread", "line": 1.5, "side": "favorite",
+  "lo": 1.5, "hi": null, "lo_inclusive": false, "hi_inclusive": null, "units": "pts" } }
+
+// will_happen_by_date
+"outcome_params": { "deadline": { "iso8601": "2027-01-01", "inclusive": false } }
+```
+</Accordion>
+
+## Errors
+
+Returns `404` when no match exists for the id:
 
 ```json
-{
-  "detail": {
-    "error_code": "EVENT_NOT_FOUND",
-    "error": "no_canonical_match",
-    "venue": "kalshi",
-    "id": "KXNONEXIST-99"
-  }
-}
+{ "detail": { "error_code": "EVENT_NOT_FOUND", "error": "no_canonical_match",
+              "venue": "kalshi", "id": "KXNONEXIST-99" } }
 ```

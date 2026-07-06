@@ -1,18 +1,18 @@
 ---
-title: "Get an event by ID"
-description: "Retrieve a canonical event by its Oddpool ID."
+title: "Get a matched event"
+description: "Fetch a matched event by its Oddpool ID."
 api: "GET https://api.oddpool.com/reference/events/{opi}"
 ---
 
-Returns the canonical event with the same shape as [Resolve a venue identifier](/institutions/reference-data/events/lookup) — the event, its per-pair classification, outcomes, linked entities, and venue listings.
+Fetch one event by its Oddpool id. Same response as [Resolve a venue ticker](/institutions/reference-data/events/lookup#response) — the event, its outcomes, each outcome's entity, and the venue side you trade.
 
-## Parameters
+## Path parameters
 
 <ParamField path="opi" type="string" required>
-  Oddpool event identifier (`OPI-XXXXXXXX`).
+  The event id, e.g. `OPI-OO4GBEZJ`.
 </ParamField>
 
-## Example
+## Request
 
 <CodeGroup>
 ```bash cURL
@@ -22,26 +22,18 @@ curl -H "X-API-Key: your_api_key" \
 ```python Python
 import requests
 
-response = requests.get(
+r = requests.get(
     "https://api.oddpool.com/reference/events/OPI-OO4GBEZJ",
     headers={"X-API-Key": "your_api_key"},
 )
-event = response.json()
+event = r.json()
 ```
 </CodeGroup>
 
-## Response
+## Errors
 
-A [canonical event](/institutions/reference-data/canonical-model), identical in shape to the lookup endpoint. See [Resolve a venue identifier](/institutions/reference-data/events/lookup#response) for the full payload.
-
-Returns `404` with `error_code: EVENT_NOT_FOUND` when no canonical event has this identifier.
+Returns `404` when no event has this id:
 
 ```json
-{
-  "detail": {
-    "error_code": "EVENT_NOT_FOUND",
-    "error": "no_canonical_match",
-    "oddpool_id": "OPI-NONEXIST"
-  }
-}
+{ "detail": { "error_code": "EVENT_NOT_FOUND", "error": "no_canonical_match", "oddpool_id": "OPI-NONEXIST" } }
 ```

@@ -1,46 +1,50 @@
 ---
-title: "List events"
-description: "Page the canonical event corpus, with fungibility filters and incremental sync."
+title: "List matched events"
+description: "Page live or historical matched events, filtered by venue pair and fungibility."
 api: "GET https://api.oddpool.com/reference/events"
 ---
 
-Returns a paginated list of canonical events. Each event carries the full canonical shape returned by [Get an event by ID](/institutions/reference-data/events/get).
+Page through matched events. Each item is a full event, the same shape as [Resolve a venue ticker](/institutions/reference-data/events/lookup#response).
 
 <Tip>
-For production reads against currently-trading markets, pass `active=true`. Without it the listing returns the full corpus, which is dominated by long-settled events.
+Pass `active=true` for events with markets still trading today. Without it you get the full corpus, which is mostly long-settled events.
 </Tip>
 
-## Parameters
+## Query parameters
 
 <ParamField query="active" type="boolean">
-  When `true`, return only canonical events with at least one underlying venue event still in `active` status. Omit (or pass `false`) for the full corpus, including settled events. Recommended default for live-trading consumers.
+  `true` returns only events with at least one venue market still trading. Recommended for live trading. Omit for the full historical corpus.
 </ParamField>
 <ParamField query="subject_domain" type="string">
-  Free-text category, sourced from Kalshi (e.g. `Sports`). Not a closed enum.
+  Category filter, sourced from Kalshi (e.g. `Sports`). Free text.
 </ParamField>
 <ParamField query="venue_pair" type="string">
-  Scope fungibility filters to one venue pair, e.g. `kalshi,polymarket`. Order-insensitive. Returns only events where both venues list the event. Required for `fungible`, `basis_class`, and `outcome_universe`.
+  Limit to events both venues list, e.g. `kalshi,polymarket`. Order doesn't matter. Required to use the three fungibility filters below.
 </ParamField>
 <ParamField query="fungible" type="boolean">
-  Requires `venue_pair`. `true` → that leg is fully fungible (`basis_class=identical` **and** `outcome_universe=identical`); `false` → the leg is present but not fully fungible.
+  Needs `venue_pair`. `true` returns only events whose sides are fully interchangeable on that pair (`basis_class=identical` and `outcome_universe=identical`).
 </ParamField>
 <ParamField query="basis_class" type="string">
-  Requires `venue_pair`. Filter that leg's `basis_class`: `identical`, `settlement_window`, or `settlement_source`.
+  Needs `venue_pair`. Filter that pair's settlement agreement: `identical`, `settlement_window`, or `settlement_source`.
 </ParamField>
 <ParamField query="outcome_universe" type="string">
-  Requires `venue_pair`. Filter that leg's `outcome_universe`: `identical`, `partial`, or `disjoint`.
+  Needs `venue_pair`. Filter how the outcome lists line up: `identical`, `partial`, or `disjoint`.
 </ParamField>
 <ParamField query="classified_since" type="datetime">
-  ISO 8601 timestamp. Returns events whose canonical state was last refreshed on or after this instant. Use for incremental sync.
+  ISO 8601. Returns only events re-evaluated on or after this time — pass your last sync time to fetch just what changed.
 </ParamField>
 <ParamField query="limit" type="integer" default="50">
-  Maximum items in the page (1–2000).
+  Items per page (1–2000).
 </ParamField>
 <ParamField query="cursor" type="string">
-  Opaque cursor from the previous response's `next_cursor`.
+  The `next_cursor` from the previous response.
 </ParamField>
 
-## Example
+<Info>
+`basis_class`, `outcome_universe`, and `fungible` describe how two venues settle relative to each other. Their meanings are documented on the [event response](/institutions/reference-data/events/lookup#response).
+</Info>
+
+## Request
 
 <CodeGroup>
 ```bash cURL
@@ -50,45 +54,40 @@ curl -H "X-API-Key: your_api_key" \
 ```python Python
 import requests
 
-response = requests.get(
+r = requests.get(
     "https://api.oddpool.com/reference/events",
     headers={"X-API-Key": "your_api_key"},
-    params={
-        "venue_pair": "kalshi,polymarket",
-        "fungible": "true",
-        "active": "true",
-        "limit": 100,
-    },
+    params={"venue_pair": "kalshi,polymarket", "fungible": "true", "active": "true", "limit": 100},
 )
-page = response.json()
+page = r.json()
 ```
 </CodeGroup>
 
 ## Response
 
-Each item is a full [canonical event](/institutions/reference-data/canonical-model). `next_cursor` is the cursor for the next page, or `null` when there are no more pages.
+<ResponseField name="items" type="object[]">
+  A page of events, each the full shape from [Resolve a venue ticker](/institutions/reference-data/events/lookup#response).
+</ResponseField>
+<ResponseField name="next_cursor" type="string | null">
+  Pass as `cursor` to get the next page. `null` on the last page.
+</ResponseField>
 
 ```json
 {
   "items": [
-    { "oddpool_id": "OPI-OO4GBEZJ", "title": "Gremio vs Corinthians", "...": "full canonical event" }
+    { "oddpool_id": "OPI-OO4GBEZJ", "title": "Gremio vs Corinthians", "...": "full event" }
   ],
   "next_cursor": "eyJpZCI6MTI4NDQ0fQ"
 }
 ```
 
-## Pagination
+## Paging
 
-Cursors are opaque. Pages are ordered by ascending internal id; when the underlying corpus only appends, this is also append-only chronological order. Page by following `next_cursor` until it is `null`:
+Follow `next_cursor` until it's `null`:
 
 ```bash
-curl -H "X-API-Key: $KEY" \
-  "https://api.oddpool.com/reference/events?limit=100"
-# then follow next_cursor from each response
-curl -H "X-API-Key: $KEY" \
-  "https://api.oddpool.com/reference/events?limit=100&cursor=<next_cursor>"
+curl -H "X-API-Key: $KEY" "https://api.oddpool.com/reference/events?active=true&limit=100"
+curl -H "X-API-Key: $KEY" "https://api.oddpool.com/reference/events?active=true&limit=100&cursor=<next_cursor>"
 ```
 
-## Incremental sync
-
-For incremental synchronization, pass `classified_since` set to the timestamp of your most recent prior sync. `classified_at` advances on new event creation, attachment of a new venue listing, outcome edits (label correction, split, merge), and settlement re-classification. It does **not** advance on price or volume changes. See [Identifiers](/institutions/reference-data/identifiers#stability-and-freshness).
+For incremental sync, store the largest `classified_at` you've seen and pass it as `classified_since` next time. `classified_at` moves when an event is re-evaluated (new outcome, settlement reclassified), not on price or volume changes.

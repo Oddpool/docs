@@ -1,89 +1,81 @@
 ---
 title: "Reference Data API"
-description: "One canonical identifier per cross-venue event, outcome, and entity — with the venue-side ids to trade each side."
+description: "Match the same event across venues to one ID, with the venue tickers to trade each side."
 ---
 
-Kalshi, Polymarket, and other prediction-market venues each issue their own tickers, IDs, and question text for the same underlying event. The Reference Data API resolves them to a single canonical identifier — one ID per cross-venue event, one ID per named outcome, one ID per real-world entity the event references — and returns the venue-side identifiers you need to subscribe to live prices on each side.
+Kalshi, Polymarket, and other venues each give the same event a different ticker, ID, and question text. The Reference Data API matches them and gives you:
 
-Mappings are produced algorithmically and confirmed through human review. You get a single trustworthy reference layer to build against, without standing up a per-venue normalization stack.
+- **one ID per event** — the same game, election, or Fed decision across every venue that lists it
+- **one ID per outcome** — each named answer on that event
+- **one ID per entity** — the team, person, or party an outcome refers to, with a Wikidata Q-ID
+- **the venue tickers** you need to subscribe to live prices on each side
 
-The registry is explicit about where venues disagree. Two classification axes on every event (`basis_class`, `outcome_universe`), plus per-outcome `divergence_axes` and a one-sentence rationale, distinguish truly fungible cross-listings from structurally divergent ones — so you can route on the difference instead of discovering it at settlement.
+For each matched event, it also tells you where the two venues agree and where they settle differently, so you can size a cross-venue position knowing exactly how fungible the two sides are. That classification is documented on [List matched events](/institutions/reference-data/events/list) and returned on every event.
 
-Every canonical entity carries a Wikidata Q-ID, a stable cross-reference to FEC, bioguide, LEI, sports-reference, MusicBrainz, and other authoritative identifier systems. Prediction-market data joins the broader structured-data graph without bespoke entity matching on your side.
-
-## Base URL
+## Base URL and auth
 
 ```text
 https://api.oddpool.com
 ```
 
-Every endpoint accepts `X-API-Key: oddpool_<key>` and returns JSON. See [Authentication](/institutions/reference-data/authentication).
-
-## Quickstart
-
-Resolve a Kalshi or Polymarket native id to the canonical event:
+Every request needs your API key in the `X-API-Key` header and returns JSON:
 
 ```bash
-curl -H "X-API-Key: $KEY" \
-  "https://api.oddpool.com/reference/events/lookup?venue=kalshi&id=KXSB-27-ARI"
-```
-
-Fetch a canonical event by Oddpool ID:
-
-```bash
-curl -H "X-API-Key: $KEY" \
-  "https://api.oddpool.com/reference/events/OPI-U3PW57WP"
-```
-
-Page through canonical events whose venue markets are still trading today (recommended default for live consumers):
-
-```bash
-curl -H "X-API-Key: $KEY" \
+curl -H "X-API-Key: oddpool_<key>" \
   "https://api.oddpool.com/reference/events?active=true&limit=100"
 ```
 
-Look up a canonical entity by Wikidata QID, or search by substring:
+A `401` means the key is missing or unknown; a `403` means the key is valid but doesn't include reference-data access (or its trial has expired).
 
-```bash
+## Quickstart
+
+<CodeGroup>
+```bash Resolve a venue ticker
+# Kalshi or Polymarket id -> the matched event
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/events/lookup?venue=kalshi&id=KXSB-27-ARI"
+```
+```bash Get an event by ID
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/events/OPI-U3PW57WP"
+```
+```bash List live events
+# events with markets still trading today
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/events?active=true&limit=100"
+```
+```bash Look up an entity
 curl -H "X-API-Key: $KEY" \
   "https://api.oddpool.com/reference/entities/lookup?wikidata_qid=Q22686"
-
-curl -H "X-API-Key: $KEY" \
-  "https://api.oddpool.com/reference/entities?q=lakers&kind=team"
 ```
-
-## Concepts
-
-Read these before building against the response shapes.
-
-<CardGroup cols={2}>
-  <Card title="Canonical model" icon="layer-group" href="/institutions/reference-data/canonical-model">
-    The four nested layers — entity, event, outcome, venue listing — and how they map to a live tradeable side.
-  </Card>
-  <Card title="Identifiers" icon="fingerprint" href="/institutions/reference-data/identifiers">
-    OPE / OPI / OPO / OPL formats, deterministic and cache-safe for the lifetime of the row.
-  </Card>
-  <Card title="Fungibility & classification" icon="scale-balanced" href="/institutions/reference-data/fungibility">
-    `basis_class`, `outcome_universe`, and `divergence_axes` — how to tell a truly fungible cross-listing from a structurally divergent one.
-  </Card>
-  <Card title="Outcome types" icon="shapes" href="/institutions/reference-data/outcome-types">
-    The `outcome_kind` taxonomy and the structured `outcome_params` for numeric buckets, thresholds, spreads, and deadlines.
-  </Card>
-  <Card title="Entities & Wikidata" icon="share-nodes" href="/institutions/reference-data/entity-model">
-    Canonical entities, their kinds, metadata, and the Wikidata Q-ID cross-walk to external identifier systems.
-  </Card>
-  <Card title="Errors" icon="triangle-exclamation" href="/institutions/reference-data/errors">
-    The error envelope and the stable `error_code` values for programmatic handling.
-  </Card>
-</CardGroup>
+</CodeGroup>
 
 ## Endpoints
 
 <CardGroup cols={2}>
-  <Card title="Events" icon="calendar" href="/institutions/reference-data/events/lookup">
-    Resolve a venue identifier to a canonical event, fetch one by Oddpool ID, or page the corpus with fungibility filters.
+  <Card title="Resolve a venue ticker" icon="right-left" href="/institutions/reference-data/events/lookup">
+    Turn a Kalshi or Polymarket id into the matched event, with every outcome and venue side.
   </Card>
-  <Card title="Entities" icon="user" href="/institutions/reference-data/entities/lookup">
-    Resolve a Wikidata Q-ID, Oddpool ID, or (kind, name) to a canonical entity, or search by substring.
+  <Card title="List matched events" icon="calendar" href="/institutions/reference-data/events/list">
+    Page live or historical events, filtered by venue pair and fungibility.
+  </Card>
+  <Card title="Resolve an entity" icon="user" href="/institutions/reference-data/entities/lookup">
+    Look up a team, person, or party by Wikidata Q-ID, Oddpool ID, or name.
+  </Card>
+  <Card title="Search entities" icon="magnifying-glass" href="/institutions/reference-data/entities/list">
+    Find entities by substring and kind.
   </Card>
 </CardGroup>
+
+## How a response is shaped
+
+Every event response nests four layers. You'll see them in the [event endpoints](/institutions/reference-data/events/lookup):
+
+```text
+event      one real-world resolution — a game, an election, a Fed decision   (OPI-XXXXXXXX)
+ └─ outcome    one named answer on that event — a team, "Yes", a price bucket   (OPO:…)
+     └─ venue listing   one venue's tradeable side of that outcome — the ticker you trade   (OPL:…)
+ └─ entity     the team / person / party an outcome refers to                   (OPE:…)
+```
+
+Every layer has its own Oddpool ID. IDs are stable for the life of the row, so once you resolve a venue ticker you can cache the mapping. Treat the IDs as opaque strings — resolve and store them rather than parsing them.

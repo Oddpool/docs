@@ -103,30 +103,23 @@
           {
             "group": "Reference Data API",
             "pages": [
-              "institutions/reference-data/overview",
-              "institutions/reference-data/canonical-model",
-              "institutions/reference-data/identifiers",
-              "institutions/reference-data/fungibility",
-              "institutions/reference-data/outcome-types",
-              "institutions/reference-data/entity-model",
-              "institutions/reference-data/authentication",
-              "institutions/reference-data/errors"
+              "institutions/reference-data/overview"
             ]
           },
           {
-            "group": "Events",
+            "group": "Matched events",
             "pages": [
               "institutions/reference-data/events/lookup",
-              "institutions/reference-data/events/get",
-              "institutions/reference-data/events/list"
+              "institutions/reference-data/events/list",
+              "institutions/reference-data/events/get"
             ]
           },
           {
             "group": "Entities",
             "pages": [
               "institutions/reference-data/entities/lookup",
-              "institutions/reference-data/entities/get",
-              "institutions/reference-data/entities/list"
+              "institutions/reference-data/entities/list",
+              "institutions/reference-data/entities/get"
             ]
           }
         ]

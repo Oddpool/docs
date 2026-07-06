@@ -1,27 +1,27 @@
 ---
 title: "Resolve an entity"
-description: "Resolve a Wikidata Q-ID, Oddpool ID, or (kind, name) pair to a canonical entity."
+description: "Look up a team, person, or party by Wikidata Q-ID, Oddpool ID, or name."
 api: "GET https://api.oddpool.com/reference/entities/lookup"
 ---
 
-Returns the canonical entity. Exactly one resolution form must be supplied: `oddpool_id`, `wikidata_qid`, or `kind` + `name`.
+Look up a single entity — a team, person, party, company, work, region, or occurrence. Pass exactly one of: `oddpool_id`, `wikidata_qid`, or `kind` + `name`.
 
-## Parameters
+## Query parameters
 
-<ParamField query="oddpool_id" type="string">
-  Oddpool entity identifier, e.g. `OPE:PERSON:DONALD-TRUMP`.
-</ParamField>
 <ParamField query="wikidata_qid" type="string">
   Wikidata Q-ID, e.g. `Q22686`.
 </ParamField>
+<ParamField query="oddpool_id" type="string">
+  Oddpool entity id, e.g. `OPE:PERSON:DONALD-TRUMP`.
+</ParamField>
 <ParamField query="kind" type="string">
-  One of `person`, `team`, `political_party`, `cultural_work`, `geographic_region`, `organization`, `event_occurrence`. Combine with `name` for an exact composite lookup.
+  One of `person`, `team`, `political_party`, `cultural_work`, `geographic_region`, `organization`, `event_occurrence`. Use with `name`.
 </ParamField>
 <ParamField query="name" type="string">
-  Exact canonical name (case-insensitive). Used in combination with `kind`.
+  Exact canonical name (case-insensitive). Use with `kind`.
 </ParamField>
 
-## Example
+## Request
 
 <CodeGroup>
 ```bash cURL
@@ -31,18 +31,41 @@ curl -H "X-API-Key: your_api_key" \
 ```python Python
 import requests
 
-response = requests.get(
+r = requests.get(
     "https://api.oddpool.com/reference/entities/lookup",
     headers={"X-API-Key": "your_api_key"},
     params={"wikidata_qid": "Q22686"},
 )
-entity = response.json()
+entity = r.json()
 ```
 </CodeGroup>
 
 ## Response
 
-Returns a [canonical entity](/institutions/reference-data/entity-model).
+<ResponseField name="oddpool_id" type="string">
+  The entity id (`OPE:KIND:slug`). Stable for the life of the entity.
+</ResponseField>
+<ResponseField name="kind" type="string">
+  `person`, `team`, `political_party`, `cultural_work`, `geographic_region`, `organization`, or `event_occurrence`.
+</ResponseField>
+<ResponseField name="canonical_name" type="string">
+  The canonical display name.
+</ResponseField>
+<ResponseField name="aliases" type="string[]">
+  Alternate names seen on venues and curated alternates.
+</ResponseField>
+<ResponseField name="wikidata_qid" type="string | null">
+  Wikidata Q-ID — a stable cross-reference to FEC, bioguide, LEI, sports-reference, MusicBrainz, and other systems. `null` for auto-minted entities (see `provenance`).
+</ResponseField>
+<ResponseField name="metadata" type="object">
+  Kind-specific fields — e.g. a team's `league`, `sport`, `city`; a person's `country`, `party_qid`, `person_kind`. Values that reference other entities are given as Wikidata Q-IDs (`country: "Q30"`). Treat it as open JSON: use the keys you know, ignore the rest.
+</ResponseField>
+<ResponseField name="provenance" type="string">
+  `wikidata` when the record comes from Wikidata, or `llm_auto` when it was minted from venue text because no Wikidata match existed.
+</ResponseField>
+<ResponseField name="source_synced_at" type="string | null">
+  ISO 8601 timestamp of the last Wikidata sync, where applicable.
+</ResponseField>
 
 ```json
 {
@@ -57,19 +80,10 @@ Returns a [canonical entity](/institutions/reference-data/entity-model).
 }
 ```
 
-<Note>
-To find every event a known entity appears in, page [`/reference/events`](/institutions/reference-data/events/list) and filter client-side.
-</Note>
+## Errors
 
-## Not found
-
-Returns `404` with `error_code: ENTITY_NOT_FOUND` when no canonical entity matches.
+Returns `404` when no entity matches:
 
 ```json
-{
-  "detail": {
-    "error_code": "ENTITY_NOT_FOUND",
-    "oddpool_id": "OPE:PERSON:NOT-A-REAL-PERSON"
-  }
-}
+{ "detail": { "error_code": "ENTITY_NOT_FOUND", "oddpool_id": "OPE:PERSON:NOT-A-REAL-PERSON" } }
 ```
