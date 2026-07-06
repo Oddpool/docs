@@ -55,8 +55,8 @@ The usual reason is `condition_scope` — the most common divergence axis, and u
 
 Which filter you want depends on whether you hold positions through settlement:
 
-- **You close before the event resolves** — cancellation risk never reaches you. Treat `condition_scope`-only pairs as tradeable with `?fungible=true&allow=condition_scope`.
-- **You hold to settlement** — keep the strict `?fungible=true`, and read each pair's `divergence_reason` for the exact edge case you're exposed to.
+- **You close before the event resolves** — cancellation risk never reaches you. Include these pairs and trade them: `?fungible=true&allow=condition_scope`.
+- **You hold to settlement** — either keep the strict `?fungible=true` for pairs with no edge-case risk at all, or add `allow=condition_scope` to include the cancellation-policy pairs and read each one's `divergence_reason` to size the risk before trading.
 
 ## Request
 
