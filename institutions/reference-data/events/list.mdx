@@ -15,20 +15,23 @@ Pass `active=true` for events with markets still trading today. Without it you g
 <ParamField query="active" type="boolean">
   `true` returns only events with at least one venue market still trading. Recommended for live trading. Omit for the full historical corpus.
 </ParamField>
-<ParamField query="subject_domain" type="string">
-  Category filter, sourced from Kalshi (e.g. `Sports`). Free text.
-</ParamField>
-<ParamField query="venue_pair" type="string">
-  Two venue tags, comma-separated, e.g. `kalshi,polymarket`. Order doesn't matter. Limits results to events both venues list, and is required to use the three fungibility filters below. Tags: `kalshi`, `polymarket`, `polymarket_us` — see [Supported venues](/institutions/reference-data/venues).
-</ParamField>
 <ParamField query="fungible" type="boolean">
-  Needs `venue_pair`. `true` returns only events whose sides are fully interchangeable on that pair (`basis_class=identical` and `outcome_universe=identical`).
+  `true` returns events that are fully fungible on at least one venue pair — both venues present, same settlement rules, outcome sets correspond, and every outcome's two sides settle identically. `false` returns the negation. Narrow to a specific pair with `venue_pair`; permit specific edge-case differences with `allow`.
+</ParamField>
+<ParamField query="allow" type="string">
+  Requires `fungible`. Comma-separated divergence axes (`timing`, `source`, `condition_scope`) that should not disqualify a pair from being fungible. For example, `allow=condition_scope` counts cancellation/postponement-only differences as fungible. See [Fungibility and cancellation risk](#fungibility-and-cancellation-risk).
 </ParamField>
 <ParamField query="basis_class" type="string">
-  Needs `venue_pair`. Filter that pair's settlement agreement: `identical`, `settlement_window`, or `settlement_source`.
+  Match events where some venue pair carries this settlement class: `identical`, `settlement_window`, or `settlement_source`. Narrow to one pair with `venue_pair`.
 </ParamField>
 <ParamField query="outcome_universe" type="string">
-  Needs `venue_pair`. Filter how the outcome lists line up: `identical`, `partial`, or `disjoint`.
+  Match events where some venue pair's outcome lists line up this way: `identical`, `partial`, or `disjoint`. Narrow to one pair with `venue_pair`.
+</ParamField>
+<ParamField query="venue_pair" type="string">
+  Optional. Narrows `fungible`, `basis_class`, and `outcome_universe` to one venue pair, e.g. `kalshi,polymarket_us` (order-insensitive). Omit to match on any venue pair the event has. Tags: `kalshi`, `polymarket`, `polymarket_us` — see [Supported venues](/institutions/reference-data/venues).
+</ParamField>
+<ParamField query="subject_domain" type="string">
+  Category filter, sourced from Kalshi (e.g. `Sports`). Free text.
 </ParamField>
 <ParamField query="classified_since" type="datetime">
   ISO 8601. Returns only events re-evaluated on or after this time — pass your last sync time to fetch just what changed.
@@ -41,15 +44,27 @@ Pass `active=true` for events with markets still trading today. Without it you g
 </ParamField>
 
 <Info>
-`basis_class`, `outcome_universe`, and `fungible` are defined in [Response fields](/institutions/reference-data/response-fields#event-venue-pair).
+`fungible`, `basis_class`, and `outcome_universe` describe how two venues settle relative to each other. Their values are defined in [Response fields](/institutions/reference-data/response-fields#event-venue-pair).
 </Info>
+
+## Fungibility and cancellation risk
+
+`fungible=true` is strict: a single outcome that settles differently on the two venues disqualifies the whole event, so it returns fewer events than you might expect.
+
+The usual reason is `condition_scope` — the most common divergence axis, and usually just the venues' standard cancellation or postponement policy. An outcome flagged with only `condition_scope` is the **same** outcome on both venues: it settles identically in the normal case and differs only on rare edge cases (a game is cancelled or postponed past a window, a tie), where one venue pays the last-traded price and the other resolves No or 50/50. It does not mean the two markets are different.
+
+Which filter you want depends on whether you hold positions through settlement:
+
+- **You close before the event resolves** — cancellation risk never reaches you. Treat `condition_scope`-only pairs as tradeable with `?fungible=true&allow=condition_scope`.
+- **You hold to settlement** — keep the strict `?fungible=true`, and read each pair's `divergence_reason` for the exact edge case you're exposed to.
 
 ## Request
 
 <CodeGroup>
 ```bash cURL
+# fungible on any venue pair, counting cancellation-policy-only differences as fungible
 curl -H "X-API-Key: your_api_key" \
-  "https://api.oddpool.com/reference/events?venue_pair=kalshi,polymarket&fungible=true&active=true&limit=100"
+  "https://api.oddpool.com/reference/events?fungible=true&allow=condition_scope&active=true&limit=100"
 ```
 ```python Python
 import requests
@@ -57,11 +72,13 @@ import requests
 r = requests.get(
     "https://api.oddpool.com/reference/events",
     headers={"X-API-Key": "your_api_key"},
-    params={"venue_pair": "kalshi,polymarket", "fungible": "true", "active": "true", "limit": 100},
+    params={"fungible": "true", "allow": "condition_scope", "active": "true", "limit": 100},
 )
 page = r.json()
 ```
 </CodeGroup>
+
+To narrow to one venue pair, add `venue_pair=kalshi,polymarket_us`.
 
 ## Response
 

@@ -164,8 +164,10 @@ An entry in an outcome's `venue_pairs` — whether the outcome's two venue sides
   |------|---------|
   | `timing` | Same outcome, fixed at different moments — one on the event itself, the other on a later administrative step (certification, swearing-in). The eventual answer matches, but early-resolution and payout timing can differ. |
   | `source` | Same value, read from two different named authorities (e.g. National Weather Service vs. Weather Underground). Agree in the modal case, can diverge on edge measurements. |
-  | `condition_scope` | Same nominal outcome, but the venues resolve an edge case to different cash settlements — e.g. one pays fair/last-traded price on a cancelled or postponed event while the other resolves No or 50-50, or they differ on what counts toward the condition. Often reflects standard cancellation/postponement policy; common on sports and entertainment. |
+  | `condition_scope` | The most common axis, and usually just the venues' standard cancellation/postponement policy. Still the same outcome: it settles identically in the normal case and differs only on rare edge cases (game cancelled or postponed past a window, a tie), where one venue pays the last-traded price and the other resolves No or 50-50. Common on sports and entertainment. |
 </ResponseField>
+
+For how `condition_scope` affects the `fungible` filter — and when to treat it as tradeable with `allow` — see [Fungibility and cancellation risk](/institutions/reference-data/events/list#fungibility-and-cancellation-risk).
 <ResponseField name="divergence_reason" type="string | null">
   One-sentence explanation of the specific case, populated when `divergence_axes` is non-empty.
 </ResponseField>
