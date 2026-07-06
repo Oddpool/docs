@@ -145,7 +145,7 @@ An entry in an outcome's `venue_listings`, one venue's tradeable side of the out
   - Polymarket US: `<marketSlug>#<YES|NO>`. Split on `#` to recover the order-API `marketSlug` and the side. Polymarket US has no CLOB tokens; orders reference the `marketSlug` and side directly.
 </ResponseField>
 <ResponseField name="venue_event_id" type="string | null">The venue's identifier for the parent event. Kalshi: event ticker. Polymarket and Polymarket US: the event slug (the human-readable id, not the numeric event id).</ResponseField>
-<ResponseField name="venue_yes_token" type="string | null">Polymarket CLOB token id for the YES side. `null` on Kalshi and Polymarket US (neither uses CLOB tokens).</ResponseField>
+<ResponseField name="venue_yes_token" type="string | null">Polymarket CLOB token id for the YES side. `null` on Kalshi and Polymarket US.</ResponseField>
 <ResponseField name="venue_no_token" type="string | null">Polymarket CLOB token id for the NO side. `null` on Kalshi and Polymarket US.</ResponseField>
 <ResponseField name="venue_question" type="string | null">Raw question text from the venue at the time of mapping.</ResponseField>
 
