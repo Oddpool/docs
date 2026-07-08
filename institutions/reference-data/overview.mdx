@@ -1,0 +1,89 @@
+---
+title: "Reference Data API"
+description: "Match the same event across venues to one ID, with the venue tickers to trade each side."
+---
+
+Kalshi, Polymarket, and other venues each give the same event a different ticker, ID, and question text. The Reference Data API matches them and gives you:
+
+- **one ID per event**: the same game, election, or Fed decision across every venue that lists it
+- **one ID per outcome**: each named answer on that event
+- **one ID per entity**: the team, person, or party an outcome refers to, with a Wikidata Q-ID
+- **the venue tickers** you need to subscribe to live prices on each side
+
+For each matched event, it also tells you where the two venues agree and where they settle differently, so you can size a cross-venue position knowing exactly how fungible the two sides are. That classification is documented on [List matched events](/institutions/reference-data/events/list) and returned on every event.
+
+## Base URL and auth
+
+```text
+https://api.oddpool.com
+```
+
+Every request needs your API key in the `X-API-Key` header and returns JSON:
+
+```bash
+curl -H "X-API-Key: oddpool_<key>" \
+  "https://api.oddpool.com/reference/v2/events?active=true&limit=100"
+```
+
+A `401` means the key is missing or unknown; a `403` means the key is valid but doesn't include reference-data access (or its trial has expired).
+
+## Quickstart
+
+<CodeGroup>
+```bash Resolve a venue ticker
+# a Kalshi, Polymarket, or Polymarket US id -> the matched event
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/v2/events/lookup?venue=kalshi&id=KXSB-27-ARI"
+```
+```bash Get an event by ID
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/v2/events/OPI-U3PW57WP"
+```
+```bash List live events
+# events with markets still trading today
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/v2/events?active=true&limit=100"
+```
+```bash Look up an entity
+curl -H "X-API-Key: $KEY" \
+  "https://api.oddpool.com/reference/v2/entities/lookup?wikidata_qid=Q22686"
+```
+</CodeGroup>
+
+## Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Get Oddpool ID by ticker" icon="right-left" href="/institutions/reference-data/events/lookup">
+    Turn a Kalshi, Polymarket, or Polymarket US id into the matched event, with every outcome and venue side.
+  </Card>
+  <Card title="List matched events" icon="calendar" href="/institutions/reference-data/events/list">
+    Page live or historical events, filtered by venue pair and fungibility.
+  </Card>
+  <Card title="Look up an entity" icon="user" href="/institutions/reference-data/entities/lookup">
+    Look up a team, person, or party by Wikidata Q-ID, Oddpool ID, or name.
+  </Card>
+  <Card title="Search entities" icon="magnifying-glass" href="/institutions/reference-data/entities/list">
+    Find entities by substring and kind.
+  </Card>
+</CardGroup>
+
+## How a response is shaped
+
+Every event response nests four layers, each with its own Oddpool ID:
+
+- **Event** (`OPI`): one real-world resolution, like a game, election, or Fed decision
+  - **Outcome** (`OPO`): one named answer on the event, like a team, "Yes", or a price bucket
+    - **Venue listing** (`OPL`): one venue's tradeable side of that outcome, the ticker you trade
+    - **Entity** (`OPE`): the team, person, or party the outcome refers to
+
+<CardGroup cols={2}>
+  <Card title="Supported venues" icon="building-columns" href="/institutions/reference-data/venues">
+    The venue tags you can pass to `venue` and `venue_pair`, and how they combine.
+  </Card>
+  <Card title="Oddpool IDs" icon="fingerprint" href="/institutions/reference-data/oddpool-ids">
+    What OPI, OPO, OPL, and OPE identify, how they nest, and why they're safe to cache.
+  </Card>
+  <Card title="Response fields" icon="list" href="/institutions/reference-data/response-fields">
+    Definitions for every field in the event and entity responses, including basis_class, outcome kinds, and divergence.
+  </Card>
+</CardGroup>

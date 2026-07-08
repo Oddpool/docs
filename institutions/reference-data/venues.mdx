@@ -1,0 +1,42 @@
+---
+title: "Supported venues"
+description: "The venues you can pass to venue and venue_pair, and how they combine into pairs."
+---
+
+The registry currently covers these venues. Pass the **tag** wherever an endpoint takes a `venue`, and combine two tags for a `venue_pair`.
+
+| Tag | Venue |
+|-----|-------|
+| `kalshi` | Kalshi |
+| `polymarket` | Polymarket |
+| `polymarket_us` | Polymarket US |
+
+More venues are added over time; new tags appear here.
+
+## Trading a side
+
+Each venue encodes its tradeable side differently in `venue_market_id`. Split on `#` to recover the base id and the side.
+
+| Venue | `venue_market_id` | CLOB tokens |
+|-------|-------------------|-------------|
+| Kalshi | market ticker | none |
+| Polymarket | `conditionId`, or `conditionId#<index>` for atomic-binary markets | `venue_yes_token` / `venue_no_token` |
+| Polymarket US | `<marketSlug>#YES` or `<marketSlug>#NO` | none |
+
+On Polymarket US, orders reference the `marketSlug` and side directly, so there are no CLOB tokens (`venue_yes_token` and `venue_no_token` are `null`). `venue_event_id` is the event slug on both Polymarket and Polymarket US. See [Response fields](/institutions/reference-data/response-fields#outcome-venue-listing) for the full listing shape.
+
+## Where you pass them
+
+- **`venue`** on [Get Oddpool ID by ticker](/institutions/reference-data/events/lookup) takes a single tag alongside the venue's `id`.
+- **`venue_pair`** on [List matched events](/institutions/reference-data/events/list) takes two tags to scope the fungibility filters to one pair.
+- In responses, listings carry a `venue` tag, and `venue_pairs` entries carry `venue_a` / `venue_b`.
+
+## Venue pairs
+
+A `venue_pair` is two distinct tags, comma-separated and order-insensitive. With the current venues:
+
+- `kalshi,polymarket`
+- `kalshi,polymarket_us`
+- `polymarket,polymarket_us`
+
+Within a pair, venues are precedence-ordered `kalshi` < `polymarket` < `polymarket_us`, which fixes which side is `venue_a` and which is `venue_b` in responses.

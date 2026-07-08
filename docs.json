@@ -96,6 +96,37 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Institutions",
+        "groups": [
+          {
+            "group": "Reference Data API",
+            "pages": [
+              "institutions/reference-data/overview",
+              "institutions/reference-data/venues",
+              "institutions/reference-data/oddpool-ids",
+              "institutions/reference-data/response-fields",
+              "institutions/reference-data/using-wikidata-ids"
+            ]
+          },
+          {
+            "group": "Matched events",
+            "pages": [
+              "institutions/reference-data/events/lookup",
+              "institutions/reference-data/events/list",
+              "institutions/reference-data/events/get"
+            ]
+          },
+          {
+            "group": "Entities",
+            "pages": [
+              "institutions/reference-data/entities/lookup",
+              "institutions/reference-data/entities/list",
+              "institutions/reference-data/entities/get"
+            ]
+          }
+        ]
       }
     ],
     "global": {

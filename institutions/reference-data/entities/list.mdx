@@ -1,0 +1,74 @@
+---
+title: "Search entities"
+description: "Find entities by substring and kind."
+api: "GET https://api.oddpool.com/reference/v2/entities"
+---
+
+Search and page entities. `q` is a case-insensitive substring match on the canonical name. Each item is a full **entity**, the same object as [Look up an entity](/institutions/reference-data/entities/lookup).
+
+## Query parameters
+
+<ParamField query="q" type="string">
+  Substring match on the canonical name, e.g. `lakers`.
+</ParamField>
+<ParamField query="kind" type="string">
+  One of `person`, `team`, `political_party`, `cultural_work`, `geographic_region`, `organization`, `event_occurrence`.
+</ParamField>
+<ParamField query="wikidata_qid" type="string">
+  Filter to a specific Wikidata Q-ID.
+</ParamField>
+<ParamField query="provenance" type="string">
+  `wikidata` for Wikidata-backed records, `llm_auto` for auto-minted ones.
+</ParamField>
+<ParamField query="limit" type="integer" default="50">
+  Items per page (1–2000).
+</ParamField>
+<ParamField query="cursor" type="string">
+  The `next_cursor` from the previous response.
+</ParamField>
+
+## Request
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/reference/v2/entities?q=lakers&kind=team"
+```
+```python Python
+import requests
+
+r = requests.get(
+    "https://api.oddpool.com/reference/v2/entities",
+    headers={"X-API-Key": "your_api_key"},
+    params={"q": "lakers", "kind": "team"},
+)
+page = r.json()
+```
+</CodeGroup>
+
+## Response
+
+<ResponseField name="items" type="Entity[]">
+  A page of entities. Each is the full **entity** object. Every field is defined in [Response fields](/institutions/reference-data/response-fields#entity).
+</ResponseField>
+<ResponseField name="next_cursor" type="string | null">
+  Pass as `cursor` for the next page. `null` on the last page.
+</ResponseField>
+
+```json
+{
+  "items": [
+    {
+      "oddpool_id": "OPE:TEAM:LOS-ANGELES-LAKERS",
+      "kind": "team",
+      "canonical_name": "Los Angeles Lakers",
+      "aliases": ["Lakers", "LA Lakers", "LAL"],
+      "wikidata_qid": "Q121783",
+      "metadata": { "league": "NBA", "sport": "basketball", "city": "Los Angeles" },
+      "provenance": "wikidata",
+      "source_synced_at": "2026-05-27T01:16:04Z"
+    }
+  ],
+  "next_cursor": null
+}
+```

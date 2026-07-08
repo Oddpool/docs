@@ -1,0 +1,56 @@
+---
+title: "Get an entity"
+description: "Fetch an entity by its Oddpool ID."
+api: "GET https://api.oddpool.com/reference/v2/entities/{ope}"
+---
+
+Fetch one entity by its Oddpool ID. Returns the same **entity** object as [Look up an entity](/institutions/reference-data/entities/lookup).
+
+## Path parameters
+
+<ParamField path="ope" type="string" required>
+  The entity id, e.g. `OPE:TEAM:LOS-ANGELES-LAKERS`. Colons are URL-safe; `OPE%3ATEAM%3ALOS-ANGELES-LAKERS` works too.
+</ParamField>
+
+## Request
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/reference/v2/entities/OPE:TEAM:LOS-ANGELES-LAKERS"
+```
+```python Python
+import requests
+
+r = requests.get(
+    "https://api.oddpool.com/reference/v2/entities/OPE:TEAM:LOS-ANGELES-LAKERS",
+    headers={"X-API-Key": "your_api_key"},
+)
+entity = r.json()
+```
+</CodeGroup>
+
+## Response
+
+A canonical **entity**. Every field is defined in [Response fields](/institutions/reference-data/response-fields#entity).
+
+```json
+{
+  "oddpool_id": "OPE:TEAM:LOS-ANGELES-LAKERS",
+  "kind": "team",
+  "canonical_name": "Los Angeles Lakers",
+  "aliases": ["Lakers", "LA Lakers", "LAL"],
+  "wikidata_qid": "Q121783",
+  "metadata": { "league": "NBA", "sport": "basketball", "city": "Los Angeles" },
+  "provenance": "wikidata",
+  "source_synced_at": "2026-05-27T01:16:04Z"
+}
+```
+
+## Errors
+
+Returns `404` when no entity has this id:
+
+```json
+{ "detail": { "error_code": "ENTITY_NOT_FOUND", "oddpool_id": "OPE:PERSON:NOT-A-REAL-PERSON" } }
+```

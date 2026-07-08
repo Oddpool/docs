@@ -1,0 +1,66 @@
+---
+title: "Look up an entity"
+description: "Look up a team, person, or party by Wikidata Q-ID, Oddpool ID, or name."
+api: "GET https://api.oddpool.com/reference/v2/entities/lookup"
+---
+
+Look up a single entity: a team, person, party, company, work, region, or occurrence. Pass exactly one of: `oddpool_id`, `wikidata_qid`, or `kind` + `name`.
+
+## Query parameters
+
+<ParamField query="wikidata_qid" type="string">
+  Wikidata Q-ID, e.g. `Q22686`.
+</ParamField>
+<ParamField query="oddpool_id" type="string">
+  Oddpool entity id, e.g. `OPE:PERSON:DONALD-TRUMP`.
+</ParamField>
+<ParamField query="kind" type="string">
+  One of `person`, `team`, `political_party`, `cultural_work`, `geographic_region`, `organization`, `event_occurrence`. Use with `name`.
+</ParamField>
+<ParamField query="name" type="string">
+  Exact canonical name (case-insensitive). Use with `kind`.
+</ParamField>
+
+## Request
+
+<CodeGroup>
+```bash cURL
+curl -H "X-API-Key: your_api_key" \
+  "https://api.oddpool.com/reference/v2/entities/lookup?wikidata_qid=Q22686"
+```
+```python Python
+import requests
+
+r = requests.get(
+    "https://api.oddpool.com/reference/v2/entities/lookup",
+    headers={"X-API-Key": "your_api_key"},
+    params={"wikidata_qid": "Q22686"},
+)
+entity = r.json()
+```
+</CodeGroup>
+
+## Response
+
+A canonical **entity**. Every field is defined in [Response fields](/institutions/reference-data/response-fields#entity).
+
+```json
+{
+  "oddpool_id": "OPE:PERSON:DONALD-TRUMP",
+  "kind": "person",
+  "canonical_name": "Donald Trump",
+  "aliases": ["Trump", "Donald J. Trump", "President Trump", "Donald John Trump"],
+  "wikidata_qid": "Q22686",
+  "metadata": { "country": "Q30", "party_qid": "Q29468", "person_kind": "politician" },
+  "provenance": "wikidata",
+  "source_synced_at": "2026-05-27T01:16:04Z"
+}
+```
+
+## Errors
+
+Returns `404` when no entity matches:
+
+```json
+{ "detail": { "error_code": "ENTITY_NOT_FOUND", "oddpool_id": "OPE:PERSON:NOT-A-REAL-PERSON" } }
+```
