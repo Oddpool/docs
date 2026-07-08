@@ -173,6 +173,16 @@
       "vscode"
     ]
   },
+  "redirects": [
+    {
+      "source": "/institutions/llms.txt",
+      "destination": "/llms.txt"
+    },
+    {
+      "source": "/institutions/llms-full.txt",
+      "destination": "/llms-full.txt"
+    }
+  ],
   "footer": {
     "socials": {
       "x": "https://x.com/oddpool_alerts",

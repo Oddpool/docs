@@ -5,7 +5,6 @@
 Base URL: https://api.oddpool.com
 WebSocket: wss://feeds.oddpool.com/ws
 Docs: https://docs.oddpool.com
-Institutions (reference data API): https://docs.oddpool.com/institutions/llms.txt
 
 ## Documentation index
 
@@ -63,3 +62,24 @@ Institutions (reference data API): https://docs.oddpool.com/institutions/llms.tx
 - [Historical orderbook](https://docs.oddpool.com/polymarket/orderbook.md): GET /historical/polymarket/orderbook — full orderbook snapshots with bids, asks, and derived best bid/ask per token.
 - [Historical top of book](https://docs.oddpool.com/polymarket/top-of-book.md): GET /historical/polymarket/top-of-book — lightweight timeseries of best bid, best ask, mid, and spread per token.
 - [Historical trades](https://docs.oddpool.com/polymarket/trades.md): GET /historical/polymarket/trades — trade executions on a Polymarket market.
+
+## Institutions (enterprise only)
+
+IMPORTANT: The Reference Data API is a separate enterprise product. It is NOT part of the standard Oddpool API documented above, and it is NOT available on retail or consumer plans. It requires an institutional agreement and a reference-data-enabled API key; without one, every endpoint below returns 403. If you are a retail consumer or a consumer-facing agent, disregard this section and do not call these endpoints. For institutional access, contact avi@oddpool.com.
+
+Canonical cross-venue reference data for institutions: one ID per event, outcome, and real-world entity across Kalshi, Polymarket, and Polymarket US, with the venue-side identifiers to trade each side, per-venue-pair fungibility classification, and a Wikidata cross-walk. Base path: `/reference/v2`.
+
+### Reference Data API concepts (enterprise)
+- [Reference Data API](https://docs.oddpool.com/institutions/reference-data/overview.md): What the API does, base URL, authentication, quickstart, and the four-layer response shape (event, outcome, venue listing, entity).
+- [Supported venues](https://docs.oddpool.com/institutions/reference-data/venues.md): The venue tags (`kalshi`, `polymarket`, `polymarket_us`) accepted by `venue` and `venue_pair`, how they combine into pairs, and each venue's `venue_market_id` format and CLOB-token model.
+- [Oddpool IDs](https://docs.oddpool.com/institutions/reference-data/oddpool-ids.md): The four identifier families (OPI event, OPO outcome, OPL venue listing, OPE entity), how they nest, and why they are cache-safe.
+- [Response fields](https://docs.oddpool.com/institutions/reference-data/response-fields.md): The full field dictionary for the event and entity responses, including basis_class, outcome_universe, outcome_kind, divergence_axes, and outcome_params.
+- [Using Wikidata IDs](https://docs.oddpool.com/institutions/reference-data/using-wikidata-ids.md): Worked examples that use each entity's wikidata_qid to join to campaign finance, stock tickers, LEIs, and other external identifier systems.
+
+### Reference Data API endpoints (enterprise)
+- [Get Oddpool ID by ticker](https://docs.oddpool.com/institutions/reference-data/events/lookup.md): GET /reference/v2/events/lookup. Resolve a Kalshi, Polymarket, or Polymarket US id to the matched event, with every outcome, linked entity, and venue side.
+- [List matched events](https://docs.oddpool.com/institutions/reference-data/events/list.md): GET /reference/v2/events. Page live or historical matched events, filtered by venue pair and fungibility (`fungible`, `allow`, `basis_class`, `outcome_universe`), subject domain, and `classified_since` for incremental sync.
+- [Get a matched event](https://docs.oddpool.com/institutions/reference-data/events/get.md): GET /reference/v2/events/{opi}. Fetch one matched event by its Oddpool ID.
+- [Look up an entity](https://docs.oddpool.com/institutions/reference-data/entities/lookup.md): GET /reference/v2/entities/lookup. Resolve a Wikidata Q-ID, Oddpool ID, or (kind, name) pair to a canonical entity.
+- [Search entities](https://docs.oddpool.com/institutions/reference-data/entities/list.md): GET /reference/v2/entities. Search and page entities by substring, kind, Wikidata Q-ID, or provenance.
+- [Get an entity](https://docs.oddpool.com/institutions/reference-data/entities/get.md): GET /reference/v2/entities/{ope}. Fetch one entity by its Oddpool ID.
